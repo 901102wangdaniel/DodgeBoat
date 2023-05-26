@@ -7,11 +7,360 @@
     <meta charset="UTF-8"/>
     <link href="assets/fav.ico" rel="icon">
     <title>Tiny Graphics</title>
+    <script src="tiny-graphics.js"></script>
+    <style>
+        * {
+            font-family: monospace
+        }
+
+        body {
+            background: DarkGray;
+            margin: 0;
+        }
+
+        canvas {
+            width: 1080px;
+            height: 600px;
+            margin-bottom: -3px
+        }
+
+        .canvas-widget {
+            width: 1080px;
+            background: DimGray
+        }
+
+        table {
+            border-collapse: collapse;
+            display: block;
+            overflow-x: auto;
+        }
+
+        table.control-box {
+            width: 1080px;
+            border: 0;
+            margin: 0;
+            max-height: 380px;
+            transition: .5s;
+            overflow-y: scroll;
+            background: DimGray
+        }
+
+        table.control-box:hover {
+            max-height: 500px
+        }
+
+        table.control-box td {
+            overflow: hidden;
+            border: 0;
+            background: DimGray;
+            border-radius: 30px
+        }
+
+        table.control-box td .control-div {
+            background: #EEEEEE;
+            height: 338px;
+            padding: 5px 5px 5px 30px;
+            box-shadow: 25px 0px 60px -15px inset
+        }
+
+        table.control-box td * {
+            background: transparent
+        }
+
+        table.control-box .control-div td {
+            border-radius: unset
+        }
+
+        table.control-box .control-title {
+            padding: 7px 40px;
+            color: white;
+            background: DarkSlateGray;
+            box-shadow: 25px 0px 70px -15px inset black
+        }
+
+        .live_string {
+            display: inline-block;
+            background: unset
+        }
+
+        table,
+        th,
+        td {
+            border: 2px solid black;
+            vertical-align: top;
+            white-space: nowrap
+        }
+
+        button {
+            background: #4C9F50;
+            color: white;
+            padding: 6px;
+            border-radius: 9px;
+            box-shadow: 4px 6px 16px 0px rgba(0, 0, 0, 0.3);
+            transition: background .3s, transform .3s
+        }
+
+        button:hover,
+        button:focus {
+            transform: scale(1.3);
+            color: gold
+        }
+
+        .link {
+            text-decoration: underline;
+            cursor: pointer
+        }
+
+        .show {
+            transform: scaleY(1);
+            height: 200px;
+            overflow: auto
+        }
+
+        .hide {
+            transform: scaleY(0);
+            height: 0px;
+            overflow: hidden
+        }
+
+        @keyframes red-pulse {
+            0% {
+                text-shadow: 0 0 0px red;
+            }
+            100% {
+                text-shadow: 0 0 5px red, 0 0 5px red, 0 0 7px red, 0 0 10px red;
+            }
+        }
+
+        @keyframes white-pulse {
+            0% {
+                text-shadow: 0 0 0px white;
+            }
+            100% {
+                text-shadow: 0 0 5px white, 0 0 20px white;
+            }
+        }
+
+        .container {
+            position: relative;
+            width: 1080px;
+            height?: 600px;
+            margin-bottom: -3px
+        }
+        
+        .greybutton {
+            all: initial;
+            background-color: Transparent;
+            color: grey;
+            padding: 6px;
+            font-family: monospace;
+            transition: transform .5s, color .5s, opacity .2s
+        }
+        
+        .greybutton:hover,
+        button:focus {
+            transform: scale(1.2);
+            color: white
+        }
+
+        #titlescreen {
+            background-color: black;
+            border: black;
+            position: absolute;
+            width: 1080px;
+            height: 600px;
+            margin-bottom: -3px;
+            z-index: 2;
+            color: white;
+            transition: all 0.2s ease
+        }
+        #logo {
+            opacity: 0.3;
+            min-height: 100%;
+            min-width: 1024px;
+            width: 100%;
+            height: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #titletext {
+            position: relative;
+            top: 200px;
+            text-align: center;
+            font-size: 80px;
+            font-family: monospace;
+            animation: blue-pulse 2s infinite alternate
+        }
+
+        #subtitletext {
+            position: relative;
+            top: 220px;
+            text-align: center;
+            font-size: 36px;
+            font-family: impact;
+            color: #880000
+        }
+
+        #startwrapper {
+            position: relative;
+            top: 300px;
+            text-align: center;
+        }
+        
+        #diffwrapper {
+            position: relative;
+            text-align: center;
+        }
+
+        #startbutton {
+            font-size: 24px;
+        }
+        
+        #easybutton {
+            font-size: 24px;
+            opacity: 0;
+        }
+        
+        #mediumbutton {
+            font-size: 24px;
+            opacity: 0;
+        }
+        
+        #hardbutton {
+            font-size: 24px;
+            opacity: 0;
+        }
+
+        #copyright {
+            position: absolute;
+            top: 520px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            font-family: times;
+            color: grey
+        }
+
+        #statsoverlay {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-family: monospace;
+            padding: 1em;
+            font-size: 18px;
+            border-radius: 10px;
+            transition: opacity 0.2s ease
+        }
+
+        #controlsoverlay {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-family: monospace;
+            padding: 1em;
+            font-size: 18px;
+            border-radius: 10px;
+            transition: opacity 0.2s ease
+        }
+        
+        #levelcompleteoverlay {
+            position: absolute;
+            left: 0; 
+            right: 0; 
+            margin-left: auto; 
+            margin-right: auto; 
+            top: 100px;
+            width: 500px;
+            height: 200px;
+            top: -500px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-family: monospace;
+            padding: 1em;
+            font-size: 96px;
+            border-radius: 10px;
+            transition: opacity 0.2s ease;
+            opacity: 0;
+        }
+
+        #deathoverlay {
+            position: absolute;
+            top: -100px;
+            text-align: center;
+            width: 1080px;
+            font-size: 72px;
+            font-family: times;
+            color: #990000;
+            opacity: 0;
+            text-shadow: 0 0 5px red, 0 0 40px red;
+            transition: opacity 2s ease, text-shadow 4s ease, font-size 4s ease;
+        }
+
+        #health {
+            position: absolute;
+            color: red;
+            letter-spacing: 5px;
+            animation: red-pulse 0.5s infinite alternate
+        }
+
+        #losthealth {
+            color: black;
+            letter-spacing: 5px
+        }
+
+        #mana {
+            position: absolute;
+            color: white;
+            letter-spacing: 5px;
+        }
+    </style>
 </head>
 <body style="background: White">
 <!-- Begin typing your web page here. -->
 <!-- The following code embeds a WebGL canvas panel, loads certain scene(s), and displays panel(s) of their controls.-->
-<div class="canvas-widget" id="main-canvas"></div>
+<div class="container">
+    <div id="titlescreen">
+        <image id="logo" src="theme_background.jpeg"></image>
+        <div id="titletext">
+            DodgeBoat!!
+        </div>
+        <div id="startwrapper">
+            <button class="greybutton" id="startbutton" onclick="startButton()">Start</button>
+        </div>
+    </div>
+    <div id="controlsoverlay">
+        <p>Use UHJK to move your character.</p>
+        <p>Use R to restart the game</p>
+    </div>
+    <div id="levelcompleteoverlay">
+        <div>YOU WIN!</div>
+        <button class="greybutton" id="levelcompletebutton" >Click here to proceed to the next level.</button>
+    </div>
+    <div id="deathoverlay">
+        YOU DIED
+    </div>
+    <div class="canvas-widget" id="main-canvas"></div>
+</div>
+<script> "use strict"
+    function startButton() {
+        document.getElementById("startbutton").disabled = "disabled";
+        document.querySelector("#titlescreen").style.opacity = 0;
+        setTimeout(hideTitleScreen, 2000);
+        const scenes = ["main-scene"];
+        new Canvas_Widget("main-canvas", scenes);
+    }
+    function hideTitleScreen() {
+        document.querySelector("#titlescreen").style.display = "none";
+    }
+</script>
 <script type=module>
     // ********************* THE ENTRY POINT OF YOUR WHOLE PROGRAM STARTS HERE *********************
     // Indicate which element on the page you want the Canvas_Widget to replace with a 3D WebGL area:

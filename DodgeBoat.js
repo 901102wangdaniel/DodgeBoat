@@ -68,7 +68,7 @@ function sound(src) {
 }
 
 
-export class CrossyBruins extends Scene {
+export class DodgeBoat extends Scene {
     constructor() {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
         super();

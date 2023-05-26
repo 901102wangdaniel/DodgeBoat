@@ -1436,3 +1436,68 @@ const Scene = tiny.Scene =
         show_explanation(document_section) {
         }                            // show_explanation(): Called by Text_Widget for generating documentation.
     }
+
+const Canvas_Widget = tiny.Canvas_Widget =
+    class Canvas_Widget                    // Canvas_Widget embeds a WebGL demo onto a website, along with various panels of controls.
+    { constructor( element, scenes, show_controls = true )   // One panel exists per each scene that's used in the canvas.  You can use up
+        { this.create( element, scenes, show_controls )      // to 16 Canvas_Widgets; browsers support up to 16 WebGL contexts per page.    
+
+        const rules = [ ".canvas-widget { width: 1080px; background: DimGray }",
+                        ".canvas-widget * { font-family: monospace }",
+                        ".canvas-widget canvas { width: 1080px; height: 600px; margin-bottom:-3px }",
+                        ".canvas-widget div { background: white }",
+                        ".canvas-widget table { border-collapse: collapse; display:block; overflow-x: auto; }",
+                        ".canvas-widget table.control-box { width: 1080px; border:0; margin:0; max-height:380px; transition:.5s; overflow-y:scroll; background:DimGray }",
+                        ".canvas-widget table.control-box:hover { max-height:500px }",
+                        ".canvas-widget table.control-box td { overflow:hidden; border:0; background:DimGray; border-radius:30px }",
+                        ".canvas-widget table.control-box td .control-div { background: #EEEEEE; height:338px; padding: 5px 5px 5px 30px; box-shadow: 25px 0px 60px -15px inset }",
+                        ".canvas-widget table.control-box td * { background:transparent }",
+                        ".canvas-widget table.control-box .control-div td { border-radius:unset }",
+                        ".canvas-widget table.control-box .control-title { padding:7px 40px; color:white; background:DarkSlateGray; box-shadow: 25px 0px 70px -15px inset black }",
+                        ".canvas-widget *.live_string { display:inline-block; background:unset }",
+                        ".dropdown { display:inline-block }",
+                        ".dropdown-content { display:inline-block; transition:.2s; transform: scaleY(0); overflow:hidden; position: absolute; \
+                                                z-index: 1; background:#E8F6FF; padding: 16px; margin-left:30px; min-width: 100px; \
+                                                box-shadow: 5px 10px 16px 0px rgba(0,0,0,0.2) inset; border-radius:10px }",
+                        ".dropdown-content a { color: black; padding: 4px 4px; display: block }",
+                        ".dropdown a:hover { background: #f1f1f1 }",
+                        ".canvas-widget button { background: #4C9F50; color: white; padding: 6px; border-radius:9px; \
+                                                    box-shadow: 4px 6px 16px 0px rgba(0,0,0,0.3); transition: background .3s, transform .3s }",
+                        ".canvas-widget button:hover, button:focus { transform: scale(1.3); color:gold }",
+                        ".link { text-decoration:underline; cursor: pointer }",
+                        ".show { transform: scaleY(1); height:200px; overflow:auto }",
+                        ".hide { transform: scaleY(0); height:0px; overflow:hidden  }" ];
+                        
+        const style = document.head.appendChild( document.createElement( "style" ) );
+        for( const r of rules ) document.styleSheets[document.styleSheets.length - 1].insertRule( r, 0 )
+        }
+    create( element, scenes, show_controls )
+        { this.patch_ios_bug();
+        element = document.querySelector( "#" + element );
+        try  { this.populate_canvas( element, scenes, show_controls );
+            } catch( error )
+            { element.innerHTML = "<H1>Error loading the demo.</H1>" + error }
+        }
+    patch_ios_bug()                               // Correct a flaw in Webkit (iPhone devices; safari mobile) that 
+        { try{ Vec.of( 1,2,3 ).times(2) }           // breaks TypedArray.from() and TypedArray.of() in subclasses.
+        catch 
+        { Vec.of   = function()      { return new Vec( Array.from( arguments ) ) }
+            Vec.from = function( arr ) { return new Vec( Array.from( arr       ) ) }
+        }
+        }
+    populate_canvas( element, scenes, show_controls )   // Assign a Webgl_Manager to the WebGL canvas.
+        { if( !scenes.every( x => window[ x ] ) )         // Make sure each scene class really exists.
+            throw "(Featured class not found)";
+        const canvas = element.appendChild( document.createElement( "canvas" ) );
+        const control_panels = element.appendChild( document.createElement( "table" ) );
+        control_panels.className = "control-box";      
+        if( !show_controls ) control_panels.style.display = "none";
+        const row = control_panels.insertRow( 0 );
+        this.webgl_manager = new Webgl_Manager( canvas, Color.of( 0,0,0,1 ) );  // Second parameter sets background color.
+
+        for( let scene_class_name of scenes )                  // Register the initially requested scenes to the render loop.
+            this.webgl_manager.register_scene_component( new window[ scene_class_name ]( this.webgl_manager, row.insertCell() ) );   
+                            
+        this.webgl_manager.render();   // Start WebGL initialization.  Note that render() will re-queue itself for more calls.
+        }
+    }
