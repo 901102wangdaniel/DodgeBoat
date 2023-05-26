@@ -386,7 +386,7 @@ export class CrossyBruins extends Scene {
                 var rockY = rock_transform[1][3];
                 
                 if(Math.sqrt(Math.pow(rockX - playerX, 2) + Math.pow(rockY - playerY, 2)) < 1) {
-                    return false; 
+                    //return false; 
                 }
             }
             else if(this.tree_positions[lane] !== undefined) {
@@ -395,7 +395,7 @@ export class CrossyBruins extends Scene {
                 var treeX = tree_transform[0][3];
                 var treeY = tree_transform[1][3];
                 if(Math.sqrt(Math.pow(treeX - playerX, 2) + Math.pow(treeY - playerY, 2)) < 1) {
-                    return false; 
+                    //return false; 
                 }
             }
             else if(this.bush_positions[lane] !== undefined) {
@@ -404,7 +404,7 @@ export class CrossyBruins extends Scene {
                 var bushX = bush_transform[0][3];
                 var bushY = bush_transform[1][3];
                 if(Math.sqrt(Math.pow(bushX - playerX, 2) + Math.pow(bushY - playerY, 2)) < 1) {
-                    return false;
+                    //return false;
                 }
             }
 
@@ -414,9 +414,9 @@ export class CrossyBruins extends Scene {
                 var coinY = coin_transform[1][3];
 
                 if(Math.sqrt(Math.pow(coinX - playerX, 2) + Math.pow(coinY - playerY, 2)) < 1) {
-                    this.coin_count += 1; 
-                    this.coin_sound.play(); 
-                    delete this.coin_positions[lane]; 
+                    //this.coin_count += 1; 
+                    //this.coin_sound.play(); 
+                    //delete this.coin_positions[lane]; 
                 }
             }
         }
