@@ -85,7 +85,7 @@ export class DodgeBoat extends Scene {
             car: new Shape_From_File("assets/car_test1.obj"),
             sphere: new defs.Subdivision_Sphere(2),
             rock: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1),
-            bear: new Shape_From_File("assets/newbear.obj"),
+            bear: new Shape_From_File("assets/boat.obj"),
             tree: new Shape_From_File("assets/tree.obj"),
             bush: new Shape_From_File("assets/bush_files/eb_house_plant_01.obj"),
             leaf: new Shape_From_File("assets/lilypad1.obj"),
@@ -753,17 +753,18 @@ export class DodgeBoat extends Scene {
         }
         
         // orient the bear/player correctly before displaying it
-        player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/2, 1, 0, 0)); // rotate bear so that it is standing upright, facing south
+        // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/2, 1, 0, 0)); // rotate bear so that it is standing upright, facing south
+        player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI, 1, 0, 0)).times(Mat4.rotation(Math.PI/2, 0, 0, 1)).times(Mat4.rotation(Math.PI, 0, 1, 0)); // rotate bear so that it is standing upright, facing south
         if(this.playerDirection == "north") {
-            player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
+            // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
         }
         else if(this.playerDirection == "west") {
-            player_rotated_transform = player_rotated_transform.times(Mat4.rotation(-Math.PI/2, 0, 1, 0));
+            // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(-Math.PI/2, 0, 1, 0));
         }
         else if(this.playerDirection == "east") {
-            player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+            // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0));
         }
-        player_rotated_transform = player_rotated_transform.times(Mat4.translation(0, 0.59, 0));
+        // player_rotated_transform = player_rotated_transform.times(Mat4.translation(0, 0.59, 0));
         this.shapes.bear.draw(context, program_state, player_rotated_transform, this.materials.bruin);
 
         this.attached = this.player_transform;
