@@ -82,7 +82,7 @@ export class DodgeBoat extends Scene {
             sheet: new defs.Grid_Patch(150, 150, row_operation, column_operation),
             lane: new defs.Grid_Patch(20, 200, row_operation, column_operation, [[0, 10], [0, 1]]),
             cube: new Cube(),
-            car: new Shape_From_File("assets/car_test1.obj"),
+            car: new Shape_From_File("assets/submarine.obj"),
             sphere: new defs.Subdivision_Sphere(2),
             rock: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1),
             bear: new Shape_From_File("assets/boat.obj"),
@@ -108,7 +108,7 @@ export class DodgeBoat extends Scene {
             texturedRiver: new Material(new  Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/riverlane.jpg")
+                texture: new Texture("assets/river.jpeg")
             }),
             texturedRoad: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
@@ -206,16 +206,7 @@ export class DodgeBoat extends Scene {
             lane.push(0);
         }
         for (let i = 4; i < this.lane_num; i++) {
-            let val = Math.floor(Math.random() * 11);
-            if (val < 5) {
-                lane.push(0); // grass: 5/11 probability
-            }
-            else if (val < 10) {
-                lane.push(1); //road: 5/11 probability
-            }
-            else {
-                lane.push(2); // river has 1/11 probability
-            }
+            lane.push(2);
         }
         this.lane_type = lane;
     }
@@ -639,7 +630,7 @@ export class DodgeBoat extends Scene {
         for (var i = 0; i < this.lane_num; i++) { // generate every lane till max lanes
             if (this.lane_type[i] === 0) { // grass - currently green lanes
                 this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedGrass);
-
+            } else {
                 //rocks
                 if (this.rock_positions[i] !== undefined) {
                     var rock_transform = model_transform.times(Mat4.translation(3 + this.rock_positions[i] * 3, -13, 1));
@@ -665,7 +656,6 @@ export class DodgeBoat extends Scene {
                                                         .times(Mat4.scale(0.5, 0.5, 1));
                     //this.shapes.coin.draw(context, program_state, coin_transform, this.materials.coin);
                 }
-            } else if (this.lane_type[i] === 1) { //road - currently gray lanes
                 //this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRoad);
 
                 // cars
@@ -676,13 +666,14 @@ export class DodgeBoat extends Scene {
                         let col = this.car_positions[i][k].getColor(); 
                         
                         let transform = model_transform.times(car_transform)
-                                                        .times(Mat4.translation(0, -12, 0))
-                                                        .times(Mat4.rotation(Math.PI/2, 0, 1 * dir, 0))
+                                                        .times(Mat4.translation(0, -12, -1))
+                                                        .times(Mat4.rotation(Math.PI, 1 * dir, 0, 0))
+                                                        .times(Mat4.rotation(Math.PI, 0, 1 * dir, 0))
                                                         .times(Mat4.rotation(Math.PI/2, 0, 0, 1 * dir))
                                                         .times(Mat4.scale(1.2, 1.2, 1.2));
+                        this.shapes.car.draw(context, program_state, transform, this.materials.red_car);
 
                         if(col === 0) {
-                            //this.shapes.car.draw(context, program_state, transform, this.materials.red_car);
                         } else if(col === 1) {
                             //this.shapes.car.draw(context, program_state, transform, this.materials.blue_car);
                         } else {
@@ -700,8 +691,7 @@ export class DodgeBoat extends Scene {
                     }                        
                     
                 }
-            } else { // river - currently blue lanes
-                //this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRiver);
+                this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRiver);
 
                 // leaf pads 
                 for (let k = 0; k < this.leaf_positions[i].length; k++) {
@@ -729,7 +719,6 @@ export class DodgeBoat extends Scene {
                             }
                         }
                     }
-
                 }
             }
             model_transform = model_transform.times(Mat4.translation(0, 4, 0));
@@ -754,15 +743,17 @@ export class DodgeBoat extends Scene {
         
         // orient the bear/player correctly before displaying it
         // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/2, 1, 0, 0)); // rotate bear so that it is standing upright, facing south
-        player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI, 1, 0, 0)).times(Mat4.rotation(Math.PI/2, 0, 0, 1)).times(Mat4.rotation(Math.PI, 0, 1, 0)); // rotate bear so that it is standing upright, facing south
-        if(this.playerDirection == "north") {
-            // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI, 0, 1, 0));
-        }
-        else if(this.playerDirection == "west") {
-            // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(-Math.PI/2, 0, 1, 0));
+        player_rotated_transform =  player_rotated_transform.times(Mat4.rotation(Math.PI, 1, 0, 0))
+                                                            .times(Mat4.rotation(Math.PI/2, 0, 0, 1))
+                                                            .times(Mat4.rotation(Math.PI, 0, 1, 0))
+                                                            .times(Mat4.translation(0, 0, -0.8))
+                                                            .times(Mat4.scale(0.5, 0.5, 0.5)); // rotate bear so that it is standing upright, facing south
+                                                            
+        if(this.playerDirection == "west") {
+            player_rotated_transform = player_rotated_transform.times(Mat4.rotation(-Math.PI/8, 1, 0, 0));
         }
         else if(this.playerDirection == "east") {
-            // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/2, 0, 1, 0));
+            player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/8, 1, 0, 0));
         }
         // player_rotated_transform = player_rotated_transform.times(Mat4.translation(0, 0.59, 0));
         this.shapes.bear.draw(context, program_state, player_rotated_transform, this.materials.bruin);
