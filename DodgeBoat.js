@@ -82,7 +82,7 @@ export class DodgeBoat extends Scene {
             sheet: new defs.Grid_Patch(150, 150, row_operation, column_operation),
             lane: new defs.Grid_Patch(20, 200, row_operation, column_operation, [[0, 10], [0, 1]]),
             cube: new Cube(),
-            car: new Shape_From_File("assets/submarine.obj"),
+            car: new Shape_From_File("assets/battleship.obj"),
             sphere: new defs.Subdivision_Sphere(2),
             rock: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1),
             bear: new Shape_From_File("assets/boat.obj"),
@@ -91,7 +91,8 @@ export class DodgeBoat extends Scene {
             leaf: new Shape_From_File("assets/lilypad1.obj"),
             frog: new Shape_From_File("assets/20436_Frog_v1.obj"),
             text: new Text_Line(35),
-            coin: new Shape_From_File("assets/coin.obj")
+            coin: new Shape_From_File("assets/coin.obj"),
+            bridge: new Shape_From_File("assets/towerbridge.obj")
         };
 
         // *** Materials
@@ -118,13 +119,15 @@ export class DodgeBoat extends Scene {
             river: new Material(new defs.Phong_Shader(),
                 { ambient: 1, diffusivity: .6, color: hex_color("#59bfff") }),
             bruin: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/nolegbear_texture.png") }),   
+                { ambient: 1, texture: new Texture("assets/nolegbear_texture.png") }),  
             red_car: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/new_redcar_texture.png") }),   
+                { ambient: 1, texture: new Texture("assets/battleship.jpg") }),   
             blue_car: new Material(new Textured_Phong(),
                 { ambient: 1, texture: new Texture("assets/new_bluecar_texture.png") }),   
             black_car: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/new_blackcar_texture.png") }),                   
+                { ambient: 1, texture: new Texture("assets/new_blackcar_texture.png") }),  
+            bridge: new Material(new Textured_Phong(),
+                { ambient: 1, texture: new Texture("assets/towerbridge.jpg") }),                   
             rock: new Material(new defs.Phong_Shader(),
                 { ambient: 1, diffusivity: .6, color: hex_color("#999999") }),
             leaf: new Material(new defs.Phong_Shader(),
@@ -179,6 +182,7 @@ export class DodgeBoat extends Scene {
         this.bush_positions = {}; // dictionary for trees positions: key = lane number, value = placement in lane
         this.coin_positions = {}; // dictionary for coin positions: key = lane number, value = placement in lane
         this.leaf_positions = {};  // dictionary for leaf positions: key = lane number, value = array/list for all placements of leafs in lane ({0: [2, 3, 12]})
+        this.bridge_position = {};
         this.frog_positions = {};
         this.car_positions = {}; // dictionary for car positions: key = lane number, value = array/list of Mat4 (model transforms) for all cars in lane
         this.generate_rocks_and_leafs();
@@ -218,57 +222,58 @@ export class DodgeBoat extends Scene {
         var bush_pos = {};
         var coin_pos = {};
         var frog_pos = {};
+        var bridge_pos = {};
         // start indices from 4 because first 4 lanes should have no obstacles, so that player doesn't start on an obstacle
         for (let i = 4; i < this.lane_num; i++) {
             //generate rocks on grass areas
             //should_generate_rocks tells us whether or not we should add a rock to the lane (0 = no, 1 = yes)
             // var should_generate_rock = Math.floor(Math.random() * 2);
             var random_v = Math.random();
-            if (this.lane_type[i] === 0) { // only add rock or tree if lane type is 0 (grass)
-                var pos = Math.floor(Math.random() * 13); // gets random position for rock in lane
-                var coin_p = Math.floor(Math.random() * 13); 
-                var new_pos = pos < 6 ? (-1*pos) : (pos-7);
-                if (random_v < 0.35) { // 35% chance of rock
-                    rock_pos[i] = new_pos;
-                }
-                else if (random_v < 0.70) { // 35% chance of tree
-                    tree_pos[i] = new_pos;
-                }
-                else { // 30% chance of bush
-                    bush_pos[i] = new_pos;
-                }
-
-                if(Math.floor(Math.random() * 2) && coin_p !== pos) { // coins!
-                    coin_pos[i] = coin_p < 6 ? (-1*coin_p) : (coin_p-7);
-                }
+            var pos = Math.floor(Math.random() * 13); // gets random position for rock in lane
+            var coin_p = Math.floor(Math.random() * 13); 
+            var new_pos = pos < 6 ? (-1*pos) : (pos-7);
+            if (random_v < 0.14) { // 14% chance of rock
+                rock_pos[i] = new_pos;
             }
+            else if (random_v < 0.27) { // 13% chance of tree
+                tree_pos[i] = new_pos;
+            }
+            else if (random_v < 0.4) { // 13% chance of bush
+                bush_pos[i] = new_pos;
+            } 
+            else if (random_v < 0.6) { // 20% chance of bridge
+                bridge_pos[i] = new_pos;
+            }                          // 40% change of ship
+
+                // if(Math.floor(Math.random() * 2) && coin_p !== pos) { // coins!
+                //     coin_pos[i] = coin_p < 6 ? (-1*coin_p) : (coin_p-7);
+                // }
             //generate leafs for river
             //only add leaf if lane type is 2 (river)
-            else if (this.lane_type[i] === 2) {
                 // all river lanes needed at least 2 leaf so player can cross
                 // generate a random number between 2 and 6 for the number of leafs in a lane
-                let num_leafs = Math.floor(Math.random() *5);
-                leaf_pos[i] = [];
-                for (let j = 0; j < num_leafs + 2; j++) { // find a random position for all n leafs
-                    let pos = Math.floor(Math.random() * 13);
 
-                    if(num_leafs > 1 && j === 0) {
-                        frog_pos[i] = pos < 6 ? (-1 * pos) : (pos - 7);
-                    }
+                // let num_leafs = Math.floor(Math.random() *5);
+                // leaf_pos[i] = [];
+                // for (let j = 0; j < num_leafs + 2; j++) { // find a random position for all n leafs
+                //     let pos = Math.floor(Math.random() * 13);
+
+                //     if(num_leafs > 1 && j === 0) {
+                //         frog_pos[i] = pos < 6 ? (-1 * pos) : (pos - 7);
+                //     }
                     
-                    if (pos < 6) {
-                        leaf_pos[i].push(-1 * pos);
+                //     if (pos < 6) {
+                //         leaf_pos[i].push(-1 * pos);
                         
-                    } else {
-                        leaf_pos[i].push(pos - 7);
-                    }
-                }
+                //     } else {
+                //         leaf_pos[i].push(pos - 7);
+                //     }
+                // }
 
-                if(i !== 0 && this.lane_type[i-1] === 2) {
-                    leaf_pos[i-1].push(leaf_pos[i][0]); // at least one leaf needs to be in the same column if there are two rivers in a row
+                // if(i !== 0 && this.lane_type[i-1] === 2) {
+                //     leaf_pos[i-1].push(leaf_pos[i][0]); // at least one leaf needs to be in the same column if there are two rivers in a row
              
-                }
-            }
+                // }
         }
         this.rock_positions = rock_pos;
         this.leaf_positions = leaf_pos;
@@ -276,7 +281,7 @@ export class DodgeBoat extends Scene {
         this.bush_positions = bush_pos;
         this.coin_positions = coin_pos; 
         this.frog_positions = frog_pos; 
-        //console.log(this.rock_positions)
+        this.bridge_position = bridge_pos;
     }
 
     
@@ -290,7 +295,7 @@ export class DodgeBoat extends Scene {
             car_num = Math.floor(Math.random() * 3) + 2; 
         } 
         for(let i = 0; i < car_num; i++) {
-            var dist_between = Math.floor(Math.random() * 4); // get random distance between cars
+            var dist_between = Math.floor(Math.random() * 15); // get random distance between cars
             let car_transform = Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1));
             pos.push(new Car(car_transform, 0, direction)); 
             //pos.push(Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1)));
@@ -366,7 +371,7 @@ export class DodgeBoat extends Scene {
 
         //check that player did not go out of bounds
         if(playerX < -14 || playerX > 24 || this.score === -4 || this.score > this.lane_num) {
-            //this.game_ended = true; 
+            this.game_ended = true; 
         }
 
         //check collision detection for rocks and trees
@@ -377,7 +382,7 @@ export class DodgeBoat extends Scene {
                 var rockY = rock_transform[1][3];
                 
                 if(Math.sqrt(Math.pow(rockX - playerX, 2) + Math.pow(rockY - playerY, 2)) < 1) {
-                    //return false; 
+                    return false; 
                 }
             }
             else if(this.tree_positions[lane] !== undefined) {
@@ -386,7 +391,7 @@ export class DodgeBoat extends Scene {
                 var treeX = tree_transform[0][3];
                 var treeY = tree_transform[1][3];
                 if(Math.sqrt(Math.pow(treeX - playerX, 2) + Math.pow(treeY - playerY, 2)) < 1) {
-                    //return false; 
+                    return false; 
                 }
             }
             else if(this.bush_positions[lane] !== undefined) {
@@ -395,7 +400,7 @@ export class DodgeBoat extends Scene {
                 var bushX = bush_transform[0][3];
                 var bushY = bush_transform[1][3];
                 if(Math.sqrt(Math.pow(bushX - playerX, 2) + Math.pow(bushY - playerY, 2)) < 1) {
-                    //return false;
+                    return false;
                 }
             }
 
@@ -482,21 +487,22 @@ export class DodgeBoat extends Scene {
             }
 
             // checking that the player didn't collide with a car on the road
-            if(this.lane_type[lane]===1){
+            if(this.lane_type[lane]===2){
                 if(this.check_collision_cars()){
-                    //this.game_ended = true;
+                    // this.game_ended = true;
                 }
             }
 
             //check that player did not land in river 
             if(this.check_collision_in_river()) {
-                //this.game_ended = true; 
+                // this.game_ended = true; 
             }
         }
     }
 
     // collision detection with the river
     check_collision_in_river() {
+        // return false;
         let lane = this.score+3; 
         let playerX = this.player_transform[0][3];
         let playerY = this.player_transform[1][3];
@@ -631,95 +637,150 @@ export class DodgeBoat extends Scene {
             if (this.lane_type[i] === 0) { // grass - currently green lanes
                 this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedGrass);
             } else {
+                this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRiver);
                 //rocks
                 if (this.rock_positions[i] !== undefined) {
                     var rock_transform = model_transform.times(Mat4.translation(3 + this.rock_positions[i] * 3, -13, 1));
-                    //this.shapes.rock.draw(context, program_state, rock_transform, this.materials.rock);
+                    this.shapes.rock.draw(context, program_state, rock_transform, this.materials.rock);
                 }
                 else if(this.tree_positions[i] !== undefined) {
                     var tree_transform = model_transform.times(Mat4.translation(3 + this.tree_positions[i] * 3, -13, 2))
                                                         .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
-                    //this.shapes.tree.draw(context, program_state, tree_transform, this.materials.tree);
+                    this.shapes.tree.draw(context, program_state, tree_transform, this.materials.tree);
                 }
                 else if(this.bush_positions[i] !== undefined) {
                     var bush_transform = model_transform.times(Mat4.translation(3 + this.bush_positions[i] * 3, -13, 2))
                                                         .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
                                                         .times(Mat4.scale(0.5,0.5,0.5))
                                                         .times(Mat4.translation(0,-4,0));
-                    //this.shapes.bush.draw(context, program_state, bush_transform, this.materials.bush);
-                }
+                    this.shapes.bush.draw(context, program_state, bush_transform, this.materials.bush);
+                } else if (this.bridge_position[i] !== undefined) {
+                    var bridge_transform = model_transform.times(Mat4.translation(4.5, -13, 3))
+                                                          .times(Mat4.scale(8.5, 5, 5));
+                    this.shapes.bridge.draw(context, program_state, bridge_transform, this.materials.bridge);
+                } else {
 
-                if(this.coin_positions[i] !== undefined) {
-                    var coin_transform = model_transform.times(Mat4.translation(3 + this.coin_positions[i] * 3, -13 , Math.sin(t) + 2))
-                                                        .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
-                                                        .times(Mat4.rotation(Math.PI/2 * t, 1, 0, 0))
-                                                        .times(Mat4.scale(0.5, 0.5, 1));
-                    //this.shapes.coin.draw(context, program_state, coin_transform, this.materials.coin);
-                }
+                // if(this.coin_positions[i] !== undefined) {
+                //     var coin_transform = model_transform.times(Mat4.translation(3 + this.coin_positions[i] * 3, -13 , Math.sin(t) + 2))
+                //                                         .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
+                //                                         .times(Mat4.rotation(Math.PI/2 * t, 1, 0, 0))
+                //                                         .times(Mat4.scale(0.5, 0.5, 1));
+                //     //this.shapes.coin.draw(context, program_state, coin_transform, this.materials.coin);
+                // }
+            // else if (this.lane_type[i] === ) { //road - currently gray lanes
+            //     //this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRoad);
+
+            //     // cars
+            //     if (this.car_positions[i] !== undefined) {
+            //         for(let k = 0; k < this.car_positions[i].length; k++) {
+            //             let car_transform = this.car_positions[i][k].getPosition(); 
+            //             let dir = this.car_positions[i][k].getDirection(); 
+            //             let col = this.car_positions[i][k].getColor(); 
+                        
+            //             let transform = model_transform.times(car_transform)
+            //                                             .times(Mat4.translation(0, -12, 0))
+            //                                             .times(Mat4.rotation(Math.PI/2, 0, 1 * dir, 0))
+            //                                             .times(Mat4.rotation(Math.PI/2, 0, 0, 1 * dir))
+            //                                             .times(Mat4.scale(1.2, 1.2, 1.2));
+
+            //             if(col === 0) {
+            //                 //this.shapes.car.draw(context, program_state, transform, this.materials.red_car);
+            //             } else if(col === 1) {
+            //                 //this.shapes.car.draw(context, program_state, transform, this.materials.blue_car);
+            //             } else {
+            //                 //this.shapes.car.draw(context, program_state, transform, this.materials.black_car);
+            //             }
+            //             this.car_positions[i][k].setPosition(car_transform.times(Mat4.translation(this.car_speed * dir, 0, 0)));
+                        
+            //             // dynamic instantiation for car - if car reaches end of board -> reset it's position to very begining of board
+            //             if((car_transform[0][3] > 24 && dir === 1) || (car_transform[0][3] < -14 && dir === -1)) { 
+            //                 // replace out of bounds car with new one
+            //                 let start_loc = dir === 1 ? -14 : 24; 
+            //                 this.car_positions[i].splice(k, 1, new Car(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
+            //             }
+                        
+            //         }                        
+                    
+            //     }
+            // } else { // river - currently blue lanes
+            //     this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRiver);
+
+            //     // leaf pads 
+            //     for (let k = 0; k < this.leaf_positions[i].length; k++) {
+            //         var leaf_transform = model_transform.times(Mat4.translation(3 + this.leaf_positions[i][k] * 3, -14, 1))
+            //                                             .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+
+            //         //this.shapes.leaf.draw(context, program_state, leaf_transform, this.materials.leaf);
+   
+            //         if(this.frog_positions[i] !== undefined && this.frog_positions[i] === this.leaf_positions[i][k]) {
+            //             //console.log(this.leaf_positions[i][k]);
+            //             this.isJumping=true;
+            //             var jumps=0;
+            //             let frog_transform=leaf_transform;
+            //             if(this.isJumping==true){
+            //                 //frog_transform=frog_transform.times(Mat4.translation(0, 3.54 * Math.abs(Math.sin(t)) , 0));
+            //                 frog_transform=frog_transform.times(Mat4.scale(0.55, 0.55, 0.55))
+            //                                             .times(Mat4.translation(0, 3.54 * Math.abs(Math.sin(t)) , 0))
+            //                                             .times(Mat4.rotation(Math.PI, 0, 1, 0))
+            //                                             .times(Mat4.rotation(-Math.PI/2, 1, 0, 0))
+            //                                             .times(Mat4.translation(0, 0, 1));
+            //                 //this.shapes.frog.draw(context, program_state,frog_transform, this.materials.frog);
+            //                 jumps=jumps+1;
+            //                 if(jumps>3){
+            //                     this.isJumping=false;
+            //                 }
+            //             }
+            //         }
+
+            //     }
+            // }
+            // else { //road - currently gray lanes
                 //this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRoad);
 
                 // cars
-                if (this.car_positions[i] !== undefined) {
-                    for(let k = 0; k < this.car_positions[i].length; k++) {
-                        let car_transform = this.car_positions[i][k].getPosition(); 
-                        let dir = this.car_positions[i][k].getDirection(); 
-                        let col = this.car_positions[i][k].getColor(); 
-                        
-                        let transform = model_transform.times(car_transform)
-                                                        .times(Mat4.translation(0, -12, -1))
-                                                        .times(Mat4.rotation(Math.PI, 1 * dir, 0, 0))
-                                                        .times(Mat4.rotation(Math.PI, 0, 1 * dir, 0))
-                                                        .times(Mat4.rotation(Math.PI/2, 0, 0, 1 * dir))
-                                                        .times(Mat4.scale(1.2, 1.2, 1.2));
-                        this.shapes.car.draw(context, program_state, transform, this.materials.red_car);
+                    if (this.car_positions[i] !== undefined) {
+                        for(let k = 0; k < this.car_positions[i].length; k++) {
+                            let car_transform = this.car_positions[i][k].getPosition(); 
+                            let dir = this.car_positions[i][k].getDirection(); 
+                            let col = this.car_positions[i][k].getColor(); 
+                            
+                            let transform = model_transform.times(car_transform)
+                                                            .times(Mat4.translation(0, -12, 0))
+                                                            .times(Mat4.rotation(Math.PI, 1 * dir, 0, 0))
+                                                            .times(Mat4.rotation(Math.PI, 0, 1 * dir, 0))
+                                                            .times(Mat4.rotation(Math.PI, 0, 0, 1 * dir))
+                                                            .times(Mat4.scale(1.2, 1.2, 1.2));
 
-                        if(col === 0) {
-                        } else if(col === 1) {
-                            //this.shapes.car.draw(context, program_state, transform, this.materials.blue_car);
-                        } else {
-                            //this.shapes.car.draw(context, program_state, transform, this.materials.black_car);
-                        }
-                        this.car_positions[i][k].setPosition(car_transform.times(Mat4.translation(this.car_speed * dir, 0, 0)));
-                        
-                        // dynamic instantiation for car - if car reaches end of board -> reset it's position to very begining of board
-                        if((car_transform[0][3] > 24 && dir === 1) || (car_transform[0][3] < -14 && dir === -1)) { 
-                            // replace out of bounds car with new one
-                            let start_loc = dir === 1 ? -14 : 24; 
-                            this.car_positions[i].splice(k, 1, new Car(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
-                        }
-                        
-                    }                        
-                    
-                }
-                this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRiver);
-
-                // leaf pads 
-                for (let k = 0; k < this.leaf_positions[i].length; k++) {
-                    var leaf_transform = model_transform.times(Mat4.translation(3 + this.leaf_positions[i][k] * 3, -14, 1))
-                                                        .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
-
-                    //this.shapes.leaf.draw(context, program_state, leaf_transform, this.materials.leaf);
-   
-                    if(this.frog_positions[i] !== undefined && this.frog_positions[i] === this.leaf_positions[i][k]) {
-                        //console.log(this.leaf_positions[i][k]);
-                        this.isJumping=true;
-                        var jumps=0;
-                        let frog_transform=leaf_transform;
-                        if(this.isJumping==true){
-                            //frog_transform=frog_transform.times(Mat4.translation(0, 3.54 * Math.abs(Math.sin(t)) , 0));
-                            frog_transform=frog_transform.times(Mat4.scale(0.55, 0.55, 0.55))
-                                                        .times(Mat4.translation(0, 3.54 * Math.abs(Math.sin(t)) , 0))
-                                                        .times(Mat4.rotation(Math.PI, 0, 1, 0))
-                                                        .times(Mat4.rotation(-Math.PI/2, 1, 0, 0))
-                                                        .times(Mat4.translation(0, 0, 1));
-                            //this.shapes.frog.draw(context, program_state,frog_transform, this.materials.frog);
-                            jumps=jumps+1;
-                            if(jumps>3){
-                                this.isJumping=false;
+                            this.shapes.car.draw(context, program_state, transform, this.materials.red_car);
+                            if(col === 0) {
+                                //this.shapes.car.draw(context, program_state, transform, this.materials.red_car);
+                            } else if(col === 1) {
+                                //this.shapes.car.draw(context, program_state, transform, this.materials.blue_car);
+                            } else {
+                                //this.shapes.car.draw(context, program_state, transform, this.materials.black_car);
                             }
-                        }
+                            this.car_positions[i][k].setPosition(car_transform.times(Mat4.translation(this.car_speed * dir, 0, 0)));
+                            
+                            // dynamic instantiation for car - if car reaches end of board -> reset it's position to very begining of board
+                            if((car_transform[0][3] > 24 && dir === 1) || (car_transform[0][3] < -14 && dir === -1)) { 
+                                // replace out of bounds car with new one
+                                let start_loc = dir === 1 ? -14 : 24; 
+                                this.car_positions[i].splice(k, 1, new Car(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
+                            }
+                            
+                        }                        
+                        
                     }
                 }
+
+                // leaf pads 
+                // for (let k = 0; k < this.leaf_positions[i].length; k++) {
+                //     var leaf_transform = model_transform.times(Mat4.translation(3 + this.leaf_positions[i][k] * 3, -14, 1))
+                //                                         .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+
+                //     this.shapes.leaf.draw(context, program_state, leaf_transform, this.materials.leaf);
+
+                // }
             }
             model_transform = model_transform.times(Mat4.translation(0, 4, 0));
         }
@@ -728,7 +789,7 @@ export class DodgeBoat extends Scene {
         // when player hasn't moved and when we are on the road (lane = 1)
         if(!this.playerMoved && this.lane_type[this.score+3]===1){
             if(this.check_collision_cars()){
-                //this.game_ended = true;
+                // this.game_ended = true;
             }
         }
         
@@ -748,7 +809,6 @@ export class DodgeBoat extends Scene {
                                                             .times(Mat4.rotation(Math.PI, 0, 1, 0))
                                                             .times(Mat4.translation(0, 0, -0.8))
                                                             .times(Mat4.scale(0.5, 0.5, 0.5)); // rotate bear so that it is standing upright, facing south
-                                                            
         if(this.playerDirection == "west") {
             player_rotated_transform = player_rotated_transform.times(Mat4.rotation(-Math.PI/8, 1, 0, 0));
         }
