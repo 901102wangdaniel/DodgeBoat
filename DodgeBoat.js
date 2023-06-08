@@ -25,14 +25,14 @@ class Cube extends Shape {
     }
 }
 
-class Car {
+class ship {
     constructor(model_transform, color, direction) {
         this.model_transform = model_transform;
         //let colors = [hex_color("#FF0000"), hex_color("#00FF00"), hex_color("#673AB7"), hex_color("#03A9F4"), hex_color("#FFFF33")]; // red, green, purple, blue, yellow
         //this.color = colors[Math.floor(Math.random() * 5)];
         this.color = Math.floor(Math.random() * 3); // 0 = red, 1 = blue, 2 = black
         this.direction = direction
-        //may also need a car type if we have multiple types of cars
+        //may also need a ship type if we have multiple types of ships
     }
 
     getDirection() {
@@ -82,13 +82,13 @@ export class DodgeBoat extends Scene {
             sheet: new defs.Grid_Patch(150, 150, row_operation, column_operation),
             lane: new defs.Grid_Patch(20, 200, row_operation, column_operation, [[0, 10], [0, 1]]),
             cube: new Cube(),
-            car: new Shape_From_File("assets/battleship.obj"),
+            ship: new Shape_From_File("assets/battleship.obj"),
             sphere: new defs.Subdivision_Sphere(2),
             rock: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1),
             bear: new Shape_From_File("assets/boat.obj"),
             tree: new Shape_From_File("assets/tree.obj"),
             bush: new Shape_From_File("assets/bush_files/eb_house_plant_01.obj"),
-            leaf: new Shape_From_File("assets/lilypad1.obj"),
+            leaf: new Shape_From_File("assets/lotus.obj"),
             frog: new Shape_From_File("assets/20436_Frog_v1.obj"),
             text: new Text_Line(35),
             coin: new Shape_From_File("assets/coin.obj"),
@@ -120,18 +120,18 @@ export class DodgeBoat extends Scene {
                 { ambient: 1, diffusivity: .6, color: hex_color("#59bfff") }),
             bruin: new Material(new Textured_Phong(),
                 { ambient: 1, texture: new Texture("assets/nolegbear_texture.png") }),  
-            red_car: new Material(new Textured_Phong(),
+            red_ship: new Material(new Textured_Phong(),
                 { ambient: 1, texture: new Texture("assets/battleship.jpg") }),   
-            blue_car: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/new_bluecar_texture.png") }),   
-            black_car: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/new_blackcar_texture.png") }),  
+            blue_ship: new Material(new Textured_Phong(),
+                { ambient: 1, texture: new Texture("assets/new_blueship_texture.png") }),   
+            black_ship: new Material(new Textured_Phong(),
+                { ambient: 1, texture: new Texture("assets/new_blackship_texture.png") }),  
             bridge: new Material(new Textured_Phong(),
                 { ambient: 1, texture: new Texture("assets/towerbridge.jpg") }),                   
             rock: new Material(new defs.Phong_Shader(),
-                { ambient: 1, diffusivity: .6, color: hex_color("#999999") }),
+                { ambient: 1, diffusivity: .6, color: hex_color("#333333") }),
             leaf: new Material(new defs.Phong_Shader(),
-                { ambient: 1, diffusivity: .6, color: hex_color("#13ae4b") }),
+                { ambient: 1, diffusivity: .6, color: hex_color("#eab5f5") }),
             tree: new Material(new Textured_Phong(),
                 { ambient: 1, texture: new Texture("assets/tree_texture.png") }),
             bush: new Material(new defs.Phong_Shader(),
@@ -184,14 +184,14 @@ export class DodgeBoat extends Scene {
         this.leaf_positions = {};  // dictionary for leaf positions: key = lane number, value = array/list for all placements of leafs in lane ({0: [2, 3, 12]})
         this.bridge_position = {};
         this.frog_positions = {};
-        this.car_positions = {}; // dictionary for car positions: key = lane number, value = array/list of Mat4 (model transforms) for all cars in lane
+        this.ship_positions = {}; // dictionary for ship positions: key = lane number, value = array/list of Mat4 (model transforms) for all ships in lane
         this.generate_rocks_and_leafs();
-        this.generate_cars(); 
+        this.generate_ships(); 
 
-        this.car_lane_min = 0; 
-        this.car_lane_max = 19; 
+        this.ship_lane_min = 0; 
+        this.ship_lane_max = 19; 
 
-        this.car_speed = 0.1;  
+        this.ship_speed = 0.1;  
         this.score = 0;
         this.coin_count = 0; 
 
@@ -205,7 +205,7 @@ export class DodgeBoat extends Scene {
 
     generate_lanes() {
         var lane = [];
-        // first 4 lanes are grass so that player doesn't immediately get hit by a car
+        // first 4 lanes are grass so that player doesn't immediately get hit by a ship
         for (let i = 0; i < 4; i++) {
             lane.push(0);
         }
@@ -286,32 +286,32 @@ export class DodgeBoat extends Scene {
 
     
 
-    generate_cars_for_lane() {
+    generate_ships_for_lane() {
         var pos = []; 
         let direction = Math.floor(Math.random() * 2) == 0? -1 : 1; 
         var x_pos = Math.floor(Math.random() * 5) - 15;
-        let car_num = Math.floor(Math.random() * 2) == 0 ? 3 : 2; // vary car num per lane so it doesn't look too uniform
+        let ship_num = Math.floor(Math.random() * 2) == 0 ? 3 : 2; // vary ship num per lane so it doesn't look too uniform
         if(this.score > 30) {
-            car_num = Math.floor(Math.random() * 3) + 2; 
+            ship_num = Math.floor(Math.random() * 3) + 2; 
         } 
-        for(let i = 0; i < car_num; i++) {
-            var dist_between = Math.floor(Math.random() * 15); // get random distance between cars
-            let car_transform = Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1));
-            pos.push(new Car(car_transform, 0, direction)); 
+        for(let i = 0; i < ship_num; i++) {
+            var dist_between = Math.floor(Math.random() * 15); // get random distance between ships
+            let ship_transform = Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1));
+            pos.push(new ship(ship_transform, 0, direction)); 
             //pos.push(Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1)));
-            x_pos += (car_num == 3 ? 13 : (car_num == 2 ? 17 : 9)) + dist_between;
+            x_pos += (ship_num == 3 ? 13 : (ship_num == 2 ? 17 : 9)) + dist_between;
         }
         return pos; 
     }
 
-    generate_cars() {
-        // start off game by only generating 20 lanes of car positions to save memory/be more efficient - use dynamic instantiation as game goes on
-        var car_pos = {};
+    generate_ships() {
+        // start off game by only generating 20 lanes of ship positions to save memory/be more efficient - use dynamic instantiation as game goes on
+        var ship_pos = {};
         for(let i = 0; i < 20; i++) {
-            car_pos[i] = this.generate_cars_for_lane();
+            ship_pos[i] = this.generate_ships_for_lane();
         }
-        this.car_positions = car_pos;
-        //console.log(this.car_positions);
+        this.ship_positions = ship_pos;
+        //console.log(this.ship_positions);
     }
 
     make_control_panel() {
@@ -425,9 +425,9 @@ export class DodgeBoat extends Scene {
             if(this.player_can_move(this.player_transform.times(Mat4.translation(0, 4, 0)), this.score + 4)) {
                 this.player_transform = this.player_transform.times(Mat4.translation(0, 4, 0));
                 this.score += 1;
-                this.car_speed += .001; // as the score gets higher, car speed gets faster too
+                this.ship_speed += .001; // as the score gets higher, ship speed gets faster too
 
-                this.car_dynamic_instantiation(1);
+                this.ship_dynamic_instantiation(1);
             }
             else {
                 this.origin = this.player_transform; 
@@ -440,9 +440,9 @@ export class DodgeBoat extends Scene {
             if(this.player_can_move(this.player_transform.times(Mat4.translation(0, -4, 0)), this.score + 2)) {
                 this.player_transform = this.player_transform.times(Mat4.translation(0, -4, 0));
                 this.score -= 1;
-                this.car_speed -= .001; 
+                this.ship_speed -= .001; 
     
-                this.car_dynamic_instantiation(-1); 
+                this.ship_dynamic_instantiation(-1); 
             } else {
                 this.origin = this.player_transform; 
                 this.player_transform = this.player_transform.times(Mat4.translation(0, -1, 0));
@@ -486,9 +486,9 @@ export class DodgeBoat extends Scene {
                 //this.game_ended = true; 
             }
 
-            // checking that the player didn't collide with a car on the road
+            // checking that the player didn't collide with a ship on the road
             if(this.lane_type[lane]===2){
-                if(this.check_collision_cars()){
+                if(this.check_collision_ships()){
                     // this.game_ended = true;
                 }
             }
@@ -526,34 +526,34 @@ export class DodgeBoat extends Scene {
         }
         return true; 
     }
-    // collision detection with the cars
-    check_collision_cars(){
+    // collision detection with the ships
+    check_collision_ships(){
         let lane = this.score+3;
         let playerX = this.player_transform[0][3];
         let playerY = this.player_transform[1][3];
         let laneY = -13 + (lane*4);
 
-        if(this.car_positions[lane]=== undefined){
+        if(this.ship_positions[lane]=== undefined){
             return false;
         }
 
-        for(let k=0; k< this.car_positions[lane].length; k++){
-             var car_transform = this.car_positions[lane][k].getPosition();
-             var dir = this.car_positions[lane][k].getDirection();
+        for(let k=0; k< this.ship_positions[lane].length; k++){
+             var ship_transform = this.ship_positions[lane][k].getPosition();
+             var dir = this.ship_positions[lane][k].getDirection();
              //console.log("dir: ", dir);
 
-             var car_moved = Mat4.identity().times(car_transform).times(Mat4.translation(0, -12, 1));
-             var carX = car_moved[0][3];
-             var carY = car_moved[1][3];
+             var ship_moved = Mat4.identity().times(ship_transform).times(Mat4.translation(0, -12, 1));
+             var shipX = ship_moved[0][3];
+             var shipY = ship_moved[1][3];
 
-             // checking if car is placed between the Bruin (playerX) or if Bruin is between the car
-             // When the cars are moving towards the right
-             if(((playerX <= carX && carX <= playerX +2.25) || (carX <= playerX && playerX<= carX+2.25)) && dir === 1){
+             // checking if ship is placed between the Bruin (playerX) or if Bruin is between the ship
+             // When the ships are moving towards the right
+             if(((playerX <= shipX && shipX <= playerX +2.25) || (shipX <= playerX && playerX<= shipX+2.25)) && dir === 1){
                  return true;
              }
-             // checking if car is placed between the Bruin (playerX) or if Bruin is between the car
-             // When the cars are moving towards the left
-             else if(((playerX-2.25 <= carX && carX <= playerX) || (carX-2.25 <= playerX && playerX<=carX))&& dir === -1){
+             // checking if ship is placed between the Bruin (playerX) or if Bruin is between the ship
+             // When the ships are moving towards the left
+             else if(((playerX-2.25 <= shipX && shipX <= playerX) || (shipX-2.25 <= playerX && playerX<=shipX))&& dir === -1){
                  return true;                 
              }
 
@@ -562,18 +562,18 @@ export class DodgeBoat extends Scene {
     }
 
     // only keeping track of the lanes that we can see / are coming up saves memory 
-    car_dynamic_instantiation(dir) {
+    ship_dynamic_instantiation(dir) {
         if(dir === 1) { // 1 = up 
-            delete this.car_positions[this.car_lane_min];
-            this.car_lane_min += 1; 
-            this.car_positions[this.car_lane_max] = this.generate_cars_for_lane();
-            this.car_lane_max += 1; 
+            delete this.ship_positions[this.ship_lane_min];
+            this.ship_lane_min += 1; 
+            this.ship_positions[this.ship_lane_max] = this.generate_ships_for_lane();
+            this.ship_lane_max += 1; 
         }
         else { // -1 = down
-            delete this.car_positions[this.car_lane_max];
-            this.car_lane_min -= 1; 
-            this.car_positions[this.car_lane_min] = this.generate_cars_for_lane();
-            this.car_lane_max -= 1; 
+            delete this.ship_positions[this.ship_lane_max];
+            this.ship_lane_min -= 1; 
+            this.ship_positions[this.ship_lane_min] = this.generate_ships_for_lane();
+            this.ship_lane_max -= 1; 
         }
     }
 
@@ -612,6 +612,12 @@ export class DodgeBoat extends Scene {
         //program_state.lights = [new Light(vec4(0, 1, 1, 0), color(1, 1, 1, 1), 999999)];
 
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+        var temp_t = 0;
+        // if (Math.floor(t) > temp_t) {
+        //     this.moveUp = true;
+        //     this.playerMoved = true;
+        //     temp_t = 
+        // }
 
         var xpos=this.frog_position.x_pos;
         var ypos=this.frog_position.y_pos;
@@ -644,9 +650,14 @@ export class DodgeBoat extends Scene {
                     this.shapes.rock.draw(context, program_state, rock_transform, this.materials.rock);
                 }
                 else if(this.tree_positions[i] !== undefined) {
-                    var tree_transform = model_transform.times(Mat4.translation(3 + this.tree_positions[i] * 3, -13, 2))
-                                                        .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
-                    this.shapes.tree.draw(context, program_state, tree_transform, this.materials.tree);
+                    // var tree_transform = model_transform.times(Mat4.translation(3 + this.tree_positions[i] * 3, -13, 2))
+                    //                                     .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+                    // this.shapes.tree.draw(context, program_state, tree_transform, this.materials.tree);
+                    var leaf_transform = model_transform.times(Mat4.translation(3 + this.tree_positions[i]* 3, -14, 1))
+                                                        // .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
+                                                        .times(Mat4.scale(0.3, 0.3, 0.3));
+
+                    this.shapes.leaf.draw(context, program_state, leaf_transform, this.materials.leaf);
                 }
                 else if(this.bush_positions[i] !== undefined) {
                     var bush_transform = model_transform.times(Mat4.translation(3 + this.bush_positions[i] * 3, -13, 2))
@@ -670,33 +681,33 @@ export class DodgeBoat extends Scene {
             // else if (this.lane_type[i] === ) { //road - currently gray lanes
             //     //this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRoad);
 
-            //     // cars
-            //     if (this.car_positions[i] !== undefined) {
-            //         for(let k = 0; k < this.car_positions[i].length; k++) {
-            //             let car_transform = this.car_positions[i][k].getPosition(); 
-            //             let dir = this.car_positions[i][k].getDirection(); 
-            //             let col = this.car_positions[i][k].getColor(); 
+            //     // ships
+            //     if (this.ship_positions[i] !== undefined) {
+            //         for(let k = 0; k < this.ship_positions[i].length; k++) {
+            //             let ship_transform = this.ship_positions[i][k].getPosition(); 
+            //             let dir = this.ship_positions[i][k].getDirection(); 
+            //             let col = this.ship_positions[i][k].getColor(); 
                         
-            //             let transform = model_transform.times(car_transform)
+            //             let transform = model_transform.times(ship_transform)
             //                                             .times(Mat4.translation(0, -12, 0))
             //                                             .times(Mat4.rotation(Math.PI/2, 0, 1 * dir, 0))
             //                                             .times(Mat4.rotation(Math.PI/2, 0, 0, 1 * dir))
             //                                             .times(Mat4.scale(1.2, 1.2, 1.2));
 
             //             if(col === 0) {
-            //                 //this.shapes.car.draw(context, program_state, transform, this.materials.red_car);
+            //                 //this.shapes.ship.draw(context, program_state, transform, this.materials.red_ship);
             //             } else if(col === 1) {
-            //                 //this.shapes.car.draw(context, program_state, transform, this.materials.blue_car);
+            //                 //this.shapes.ship.draw(context, program_state, transform, this.materials.blue_ship);
             //             } else {
-            //                 //this.shapes.car.draw(context, program_state, transform, this.materials.black_car);
+            //                 //this.shapes.ship.draw(context, program_state, transform, this.materials.black_ship);
             //             }
-            //             this.car_positions[i][k].setPosition(car_transform.times(Mat4.translation(this.car_speed * dir, 0, 0)));
+            //             this.ship_positions[i][k].setPosition(ship_transform.times(Mat4.translation(this.ship_speed * dir, 0, 0)));
                         
-            //             // dynamic instantiation for car - if car reaches end of board -> reset it's position to very begining of board
-            //             if((car_transform[0][3] > 24 && dir === 1) || (car_transform[0][3] < -14 && dir === -1)) { 
-            //                 // replace out of bounds car with new one
+            //             // dynamic instantiation for ship - if ship reaches end of board -> reset it's position to very begining of board
+            //             if((ship_transform[0][3] > 24 && dir === 1) || (ship_transform[0][3] < -14 && dir === -1)) { 
+            //                 // replace out of bounds ship with new one
             //                 let start_loc = dir === 1 ? -14 : 24; 
-            //                 this.car_positions[i].splice(k, 1, new Car(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
+            //                 this.ship_positions[i].splice(k, 1, new ship(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
             //             }
                         
             //         }                        
@@ -737,35 +748,34 @@ export class DodgeBoat extends Scene {
             // else { //road - currently gray lanes
                 //this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRoad);
 
-                // cars
-                    if (this.car_positions[i] !== undefined) {
-                        for(let k = 0; k < this.car_positions[i].length; k++) {
-                            let car_transform = this.car_positions[i][k].getPosition(); 
-                            let dir = this.car_positions[i][k].getDirection(); 
-                            let col = this.car_positions[i][k].getColor(); 
-                            
-                            let transform = model_transform.times(car_transform)
+                // ships
+                    if (this.ship_positions[i] !== undefined) {
+                        for(let k = 0; k < this.ship_positions[i].length; k++) {
+                            let ship_transform = this.ship_positions[i][k].getPosition(); 
+                            let dir = this.ship_positions[i][k].getDirection(); 
+                            let col = this.ship_positions[i][k].getColor(); 
+                            let transform = model_transform.times(ship_transform)
                                                             .times(Mat4.translation(0, -12, 0))
                                                             .times(Mat4.rotation(Math.PI, 1 * dir, 0, 0))
                                                             .times(Mat4.rotation(Math.PI, 0, 1 * dir, 0))
                                                             .times(Mat4.rotation(Math.PI, 0, 0, 1 * dir))
                                                             .times(Mat4.scale(1.2, 1.2, 1.2));
 
-                            this.shapes.car.draw(context, program_state, transform, this.materials.red_car);
+                            this.shapes.ship.draw(context, program_state, transform, this.materials.red_ship);
                             if(col === 0) {
-                                //this.shapes.car.draw(context, program_state, transform, this.materials.red_car);
+                                //this.shapes.ship.draw(context, program_state, transform, this.materials.red_ship);
                             } else if(col === 1) {
-                                //this.shapes.car.draw(context, program_state, transform, this.materials.blue_car);
+                                //this.shapes.ship.draw(context, program_state, transform, this.materials.blue_ship);
                             } else {
-                                //this.shapes.car.draw(context, program_state, transform, this.materials.black_car);
+                                //this.shapes.ship.draw(context, program_state, transform, this.materials.black_ship);
                             }
-                            this.car_positions[i][k].setPosition(car_transform.times(Mat4.translation(this.car_speed * dir, 0, 0)));
+                            this.ship_positions[i][k].setPosition(ship_transform.times(Mat4.translation(this.ship_speed * dir, 0, 0)));
                             
-                            // dynamic instantiation for car - if car reaches end of board -> reset it's position to very begining of board
-                            if((car_transform[0][3] > 24 && dir === 1) || (car_transform[0][3] < -14 && dir === -1)) { 
-                                // replace out of bounds car with new one
+                            // dynamic instantiation for ship - if ship reaches end of board -> reset it's position to very begining of board
+                            if((ship_transform[0][3] > 24 && dir === 1) || (ship_transform[0][3] < -14 && dir === -1)) { 
+                                // replace out of bounds ship with new one
                                 let start_loc = dir === 1 ? -14 : 24; 
-                                this.car_positions[i].splice(k, 1, new Car(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
+                                this.ship_positions[i].splice(k, 1, new ship(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
                             }
                             
                         }                        
@@ -775,20 +785,20 @@ export class DodgeBoat extends Scene {
 
                 // leaf pads 
                 // for (let k = 0; k < this.leaf_positions[i].length; k++) {
-                //     var leaf_transform = model_transform.times(Mat4.translation(3 + this.leaf_positions[i][k] * 3, -14, 1))
-                //                                         .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+                    // var leaf_transform = model_transform.times(Mat4.translation(3 + this.leaf_positions[i][k] * 3, -14, 1))
+                    //                                     .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
 
-                //     this.shapes.leaf.draw(context, program_state, leaf_transform, this.materials.leaf);
+                    // this.shapes.leaf.draw(context, program_state, leaf_transform, this.materials.leaf);
 
                 // }
             }
             model_transform = model_transform.times(Mat4.translation(0, 4, 0));
         }
 
-        // Checking if the cars collided with the Bruin when it's at rest
+        // Checking if the ships collided with the Bruin when it's at rest
         // when player hasn't moved and when we are on the road (lane = 1)
         if(!this.playerMoved && this.lane_type[this.score+3]===1){
-            if(this.check_collision_cars()){
+            if(this.check_collision_ships()){
                 // this.game_ended = true;
             }
         }
