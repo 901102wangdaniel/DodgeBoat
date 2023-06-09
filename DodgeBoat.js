@@ -201,6 +201,8 @@ export class DodgeBoat extends Scene {
         this.origin = null; 
 
         this.isJumping = false; 
+
+        this.temp_t = null;
         
     }
 
@@ -326,13 +328,14 @@ export class DodgeBoat extends Scene {
         this.new_line();
         this.new_line();
         this.key_triggered_button("Up", ["u"], () => {
-            this.moveUp = true;
-            this.playerMoved = true;
+            // this.moveUp = true;
+            // this.playerMoved = true;
+            this.temp_t = 0;
         });
-        this.key_triggered_button("Down", ["j"], () => {
-            this.moveDown = true;
-            this.playerMoved = true;
-        });
+        // this.key_triggered_button("Down", ["j"], () => {
+        //     this.moveDown = true;
+        //     this.playerMoved = true;
+        // });
         this.key_triggered_button("Left", ["h"], () => {
             this.moveLeft = true;
             this.playerMoved = true;
@@ -376,7 +379,7 @@ export class DodgeBoat extends Scene {
         }
 
         //check collision detection for rocks and trees
-        if (this.lane_type[lane] === 0) {
+        if (this.lane_type[lane] === 2) {
             if (this.rock_positions[lane] !== undefined) {
                 var rock_transform = Mat4.identity().times(Mat4.translation(3 + this.rock_positions[lane] * 3, laneYCoords, 1));
                 var rockX = rock_transform[0][3];
@@ -619,12 +622,11 @@ export class DodgeBoat extends Scene {
         //program_state.lights = [new Light(vec4(0, 1, 1, 0), color(1, 1, 1, 1), 999999)];
 
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-        var temp_t = 0;
-        // if (Math.floor(t) > temp_t) {
-        //     this.moveUp = true;
-        //     this.playerMoved = true;
-        //     temp_t = 
-        // }
+        if (this.temp_t !== null && (this.score < 80 ? (t - this.temp_t) > (1 - 0.005 * this.score) : (t - this.temp_t) > 0.6)) {
+            this.moveUp = true;
+            this.playerMoved = true;
+            this.temp_t = t;
+        }
 
         var xpos=this.frog_position.x_pos;
         var ypos=this.frog_position.y_pos;
