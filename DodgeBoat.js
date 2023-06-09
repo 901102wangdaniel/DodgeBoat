@@ -26,13 +26,9 @@ class Cube extends Shape {
 }
 
 class ship {
-    constructor(model_transform, color, direction) {
+    constructor(model_transform, direction) {
         this.model_transform = model_transform;
-        //let colors = [hex_color("#FF0000"), hex_color("#00FF00"), hex_color("#673AB7"), hex_color("#03A9F4"), hex_color("#FFFF33")]; // red, green, purple, blue, yellow
-        //this.color = colors[Math.floor(Math.random() * 5)];
-        this.color = Math.floor(Math.random() * 3); // 0 = red, 1 = blue, 2 = black
         this.direction = direction;
-        //may also need a ship type if we have multiple types of ships
     }
 
     getDirection() {
@@ -43,31 +39,11 @@ class ship {
         return this.model_transform; 
     }
 
-    getColor() {
-        return this.color;
-    }
-
     setPosition(pos) {
         this.model_transform = pos;
         this.xPos = pos[0][3];
     }
 }
-
-function sound(src) {
-    this.sound = document.createElement("audio");
-    this.sound.src = src;
-    this.sound.setAttribute("preload", "auto");
-    this.sound.setAttribute("controls", "none");
-    this.sound.style.display = "none";
-    document.body.appendChild(this.sound);
-    this.play = function(){
-        this.sound.play();
-    }
-    this.stop = function(){
-        this.sound.pause();
-    }    
-}
-
 
 export class DodgeBoat extends Scene {
     constructor() {
@@ -80,28 +56,20 @@ export class DodgeBoat extends Scene {
         const column_operation = (t, p) => Mat4.translation(.2, 0, 0).times(p.to4(1)).to3();
 
         this.shapes = {
-            sheet: new defs.Grid_Patch(150, 150, row_operation, column_operation),
             lane: new defs.Grid_Patch(20, 200, row_operation, column_operation, [[0, 10], [0, 1]]),
             cube: new Cube(),
             ship: new Shape_From_File("assets/battleship.obj"),
             sphere: new defs.Subdivision_Sphere(2),
             rock: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1),
-            bear: new Shape_From_File("assets/boat.obj"),
-            tree: new Shape_From_File("assets/tree.obj"),
+            boat: new Shape_From_File("assets/boat.obj"),
             bush: new Shape_From_File("assets/bush_files/eb_house_plant_01.obj"),
-            leaf: new Shape_From_File("assets/lotus.obj"),
-            frog: new Shape_From_File("assets/20436_Frog_v1.obj"),
+            lotus: new Shape_From_File("assets/lotus.obj"),
             text: new Text_Line(35),
-            coin: new Shape_From_File("assets/coin.obj"),
             bridge: new Shape_From_File("assets/towerbridge.obj")
         };
 
         // *** Materials
         this.materials = {
-            floor: new Material(new defs.Phong_Shader(),
-                { ambient: 1, diffusivity: .6, color: hex_color("#C1F376") }),
-            road: new Material(new defs.Phong_Shader(),
-                { ambient: 1, diffusivity: .6, color: hex_color("#555555") }),
             texturedGrass: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1, diffusivity: 0.1, specularity: 0.1,
@@ -115,32 +83,20 @@ export class DodgeBoat extends Scene {
             texturedRoad: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/roadlane.png") // roadlane.png or road2.jpg
+                texture: new Texture("assets/roadlane.png")
             }),
-            river: new Material(new defs.Phong_Shader(),
-                { ambient: 1, diffusivity: .6, color: hex_color("#59bfff") }),
-            bruin: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/nolegbear_texture.png") }),  
-            red_ship: new Material(new Textured_Phong(),
+            boat: new Material(new defs.Phong_Shader(), 
+                { ambient: 1, diffusivity: .6, color: hex_color("#555555") }),
+            battleship: new Material(new Textured_Phong(),
                 { ambient: 1, texture: new Texture("assets/battleship.jpg") }),   
-            blue_ship: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/new_blueship_texture.png") }),   
-            black_ship: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/new_blackship_texture.png") }),  
             bridge: new Material(new Textured_Phong(),
                 { ambient: 1, texture: new Texture("assets/towerbridge.jpg") }),                   
             rock: new Material(new defs.Phong_Shader(),
                 { ambient: 1, diffusivity: .6, color: hex_color("#333333") }),
-            leaf: new Material(new defs.Phong_Shader(),
+            lotus: new Material(new defs.Phong_Shader(),
                 { ambient: 1, diffusivity: .6, color: hex_color("#eab5f5") }),
-            tree: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/tree_texture.png") }),
             bush: new Material(new defs.Phong_Shader(),
                 { ambient: 1, diffusivity: .6, color: hex_color("#002800") }),
-            frog: new Material(new defs.Phong_Shader(),
-                { ambient: 1, diffusivity: .6, color: hex_color("#25D900") }),
-            coin: new Material(new defs.Phong_Shader(),
-                { ambient: 1, diffusivity: .6, specularity: 0.8, color: hex_color("#FFD700") }),
             endScreen: new Material(new defs.Phong_Shader(), {
                     color: hex_color("#1E3F66"), ambient: 1,
                     diffusivity: 0.6, specularity:0.1
@@ -153,15 +109,12 @@ export class DodgeBoat extends Scene {
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 20, 10), vec3(0, 0, 0), vec3(0, -1, 0));
 
-        this.coin_sound = new sound("assets/coin-sound.mp3");
-
         this.setup_game(); 
     }
 
     setup_game() {
         // detect movements 
         this.moveUp = false;
-        this.moveDown = false;
         this.moveLeft = false;
         this.moveRight = false;
         this.playerMoved = false; 
@@ -176,17 +129,12 @@ export class DodgeBoat extends Scene {
         this.lane_num = 1000; // constant for max number of generated lanes
         this.generate_lanes();
 
-        this.frog_position=vec3(0,0,0);
-
         this.rock_positions = {}; // dictionary for rocks positions: key = lane number, value = placement in lane 
-        this.tree_positions = {}; // dictionary for trees positions: key = lane number, value = placement in lane
-        this.bush_positions = {}; // dictionary for trees positions: key = lane number, value = placement in lane
-        this.coin_positions = {}; // dictionary for coin positions: key = lane number, value = placement in lane
-        this.leaf_positions = {};  // dictionary for leaf positions: key = lane number, value = array/list for all placements of leafs in lane ({0: [2, 3, 12]})
-        this.bridge_position = {};
-        this.frog_positions = {};
+        this.lotus_positions = {}; // dictionary for lotus positions: key = lane number, value = placement in lane
+        this.bush_positions = {}; // dictionary for bush positions: key = lane number, value = placement in lane
+        this.bridge_position = {}; // dictionary for bridge positions: key = lane number, value = placement in lane
         this.ship_positions = {}; // dictionary for ship positions: key = lane number, value = array/list of Mat4 (model transforms) for all ships in lane
-        this.generate_rocks_and_leafs();
+        this.generate_rocks_and_lotus();
         this.generate_ships(); 
 
         this.ship_lane_min = 0; 
@@ -194,13 +142,10 @@ export class DodgeBoat extends Scene {
 
         this.ship_speed = 0.1;  
         this.score = 0;
-        this.coin_count = 0; 
 
         this.game_ended = false; // set this to true if player collided and game is over
 
         this.origin = null; 
-
-        this.isJumping = false; 
 
         this.temp_t = null;
         
@@ -208,38 +153,38 @@ export class DodgeBoat extends Scene {
 
     generate_lanes() {
         var lane = [];
-        // first 4 lanes are grass so that player doesn't immediately get hit by a ship
+        // first 4 lanes are safe water so that player doesn't immediately get hit by a ship
         for (let i = 0; i < 4; i++) {
             lane.push(0);
         }
         for (let i = 4; i < this.lane_num; i++) {
-            lane.push(2);
+            var random_v = Math.random();
+            if (random_v < 0.6) {
+                lane.push(2);   // water lane without ships
+            } else {
+                lane.push(1);   // water lane with ships
+            }
+            
         }
         this.lane_type = lane;
     }
 
-    generate_rocks_and_leafs() {
+    generate_rocks_and_lotus() {
         var rock_pos = {};
-        var leaf_pos = {};
-        var tree_pos = {};
+        var lotus_pos = {};
         var bush_pos = {};
-        var coin_pos = {};
-        var frog_pos = {};
         var bridge_pos = {};
         // start indices from 4 because first 4 lanes should have no obstacles, so that player doesn't start on an obstacle
         for (let i = 4; i < this.lane_num; i++) {
-            //generate rocks on grass areas
-            //should_generate_rocks tells us whether or not we should add a rock to the lane (0 = no, 1 = yes)
-            // var should_generate_rock = Math.floor(Math.random() * 2);
+            //generate rocks, lotus, bush, and bridge
             var random_v = Math.random();
-            var pos = Math.floor(Math.random() * 13); // gets random position for rock in lane
-            var coin_p = Math.floor(Math.random() * 13); 
+            var pos = Math.floor(Math.random() * 13); // gets random position
             var new_pos = pos < 6 ? (-1*pos) : (pos-7);
             if (random_v < 0.14) { // 14% chance of rock
                 rock_pos[i] = new_pos;
             }
-            else if (random_v < 0.27) { // 13% chance of tree
-                tree_pos[i] = new_pos;
+            else if (random_v < 0.27) { // 13% chance of lotus
+                lotus_pos[i] = new_pos;
             }
             else if (random_v < 0.4) { // 13% chance of bush
                 bush_pos[i] = new_pos;
@@ -247,43 +192,10 @@ export class DodgeBoat extends Scene {
             else if (random_v < 0.6) { // 20% chance of bridge
                 bridge_pos[i] = new_pos;
             }                          // 40% change of ship
-
-                // if(Math.floor(Math.random() * 2) && coin_p !== pos) { // coins!
-                //     coin_pos[i] = coin_p < 6 ? (-1*coin_p) : (coin_p-7);
-                // }
-            //generate leafs for river
-            //only add leaf if lane type is 2 (river)
-                // all river lanes needed at least 2 leaf so player can cross
-                // generate a random number between 2 and 6 for the number of leafs in a lane
-
-                // let num_leafs = Math.floor(Math.random() *5);
-                // leaf_pos[i] = [];
-                // for (let j = 0; j < num_leafs + 2; j++) { // find a random position for all n leafs
-                //     let pos = Math.floor(Math.random() * 13);
-
-                //     if(num_leafs > 1 && j === 0) {
-                //         frog_pos[i] = pos < 6 ? (-1 * pos) : (pos - 7);
-                //     }
-                    
-                //     if (pos < 6) {
-                //         leaf_pos[i].push(-1 * pos);
-                        
-                //     } else {
-                //         leaf_pos[i].push(pos - 7);
-                //     }
-                // }
-
-                // if(i !== 0 && this.lane_type[i-1] === 2) {
-                //     leaf_pos[i-1].push(leaf_pos[i][0]); // at least one leaf needs to be in the same column if there are two rivers in a row
-             
-                // }
         }
         this.rock_positions = rock_pos;
-        this.leaf_positions = leaf_pos;
-        this.tree_positions = tree_pos;
+        this.lotus_positions = lotus_pos;
         this.bush_positions = bush_pos;
-        this.coin_positions = coin_pos; 
-        this.frog_positions = frog_pos; 
         this.bridge_position = bridge_pos;
     }
 
@@ -298,10 +210,9 @@ export class DodgeBoat extends Scene {
             ship_num = Math.floor(Math.random() * 3) + 2; 
         } 
         for(let i = 0; i < ship_num; i++) {
-            var dist_between = Math.floor(Math.random() * 15); // get random distance between ships
+            var dist_between = Math.floor(Math.random() * 30); // get random distance between ships
             let ship_transform = Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1));
-            pos.push(new ship(ship_transform, 0, direction, x_pos)); 
-            //pos.push(Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1)));
+            pos.push(new ship(ship_transform, direction, x_pos)); 
             x_pos += (ship_num == 3 ? 13 : (ship_num == 2 ? 17 : 9)) + dist_between;
         }
         return pos; 
@@ -314,7 +225,6 @@ export class DodgeBoat extends Scene {
             ship_pos[i] = this.generate_ships_for_lane();
         }
         this.ship_positions = ship_pos;
-        //console.log(this.ship_positions);
     }
 
     make_control_panel() {
@@ -322,20 +232,10 @@ export class DodgeBoat extends Scene {
             box.textContent = "Score: " + (this.score < 0 ? 0 : this.score)
         });
         this.new_line();
-        this.live_string(box => {
-            box.textContent = "Coins: " + this.coin_count
-        });
         this.new_line();
-        this.new_line();
-        this.key_triggered_button("Up", ["u"], () => {
-            // this.moveUp = true;
-            // this.playerMoved = true;
+        this.key_triggered_button("Start the boat", ["u"], () => {
             this.temp_t = 0;
         });
-        // this.key_triggered_button("Down", ["j"], () => {
-        //     this.moveDown = true;
-        //     this.playerMoved = true;
-        // });
         this.key_triggered_button("Left", ["h"], () => {
             this.moveLeft = true;
             this.playerMoved = true;
@@ -371,14 +271,12 @@ export class DodgeBoat extends Scene {
         let playerY = pos[1][3];
         let laneYCoords = -13 + (lane*4);
 
-        //console.log(playerY, laneYCoords);
-
         //check that player did not go out of bounds
         if(playerX < -14 || playerX > 24 || this.score === -4 || this.score > this.lane_num) {
             this.game_ended = true; 
         }
 
-        //check collision detection for rocks and trees
+        //check collision detection for rocks and lotus
         if (this.lane_type[lane] === 2) {
             if (this.rock_positions[lane] !== undefined) {
                 var rock_transform = Mat4.identity().times(Mat4.translation(3 + this.rock_positions[lane] * 3, laneYCoords, 1));
@@ -389,12 +287,12 @@ export class DodgeBoat extends Scene {
                     return false; 
                 }
             }
-            else if(this.tree_positions[lane] !== undefined) {
-                var tree_transform = Mat4.identity().times(Mat4.translation(3 + this.tree_positions[lane] * 3, laneYCoords, 2))
+            else if(this.lotus_positions[lane] !== undefined) {
+                var lotus_transform = Mat4.identity().times(Mat4.translation(3 + this.lotus_positions[lane] * 3, laneYCoords, 2))
                                                     .times(Mat4.rotation(90, 1, 0, 0));
-                var treeX = tree_transform[0][3];
-                var treeY = tree_transform[1][3];
-                if(Math.sqrt(Math.pow(treeX - playerX, 2) + Math.pow(treeY - playerY, 2)) < 1) {
+                var lotusX = lotus_transform[0][3];
+                var lotusY = lotus_transform[1][3];
+                if(Math.sqrt(Math.pow(lotusX - playerX, 2) + Math.pow(lotusY - playerY, 2)) < 1) {
                     return false; 
                 }
             }
@@ -405,18 +303,6 @@ export class DodgeBoat extends Scene {
                 var bushY = bush_transform[1][3];
                 if(Math.sqrt(Math.pow(bushX - playerX, 2) + Math.pow(bushY - playerY, 2)) < 1) {
                     return false;
-                }
-            }
-
-            if(this.coin_positions[lane] !== undefined) {
-                var coin_transform = Mat4.identity().times(Mat4.translation(3 + this.coin_positions[lane] * 3, laneYCoords , 1)); 
-                var coinX = coin_transform[0][3];
-                var coinY = coin_transform[1][3];
-
-                if(Math.sqrt(Math.pow(coinX - playerX, 2) + Math.pow(coinY - playerY, 2)) < 1) {
-                    //this.coin_count += 1; 
-                    //this.coin_sound.play(); 
-                    //delete this.coin_positions[lane]; 
                 }
             }
         }
@@ -439,20 +325,6 @@ export class DodgeBoat extends Scene {
             }
             this.moveUp = false;
             this.playerDirection = "north";
-        }
-        if (this.moveDown) {
-            if(this.player_can_move(this.player_transform.times(Mat4.translation(0, -4, 0)), this.score + 2)) {
-                this.player_transform = this.player_transform.times(Mat4.translation(0, -4, 0));
-                this.score -= 1;
-                this.ship_speed -= .001; 
-    
-                this.ship_dynamic_instantiation(-1); 
-            } else {
-                this.origin = this.player_transform; 
-                this.player_transform = this.player_transform.times(Mat4.translation(0, -1, 0));
-            }
-            this.moveDown = false;
-            this.playerDirection = "south";
         }
         if (this.moveRight) {
             if(this.player_can_move(this.player_transform.times(Mat4.translation(3, 0, 0)), this.score + 3)) {
@@ -480,59 +352,29 @@ export class DodgeBoat extends Scene {
             this.playerMoved = false;
             let lane = this.score+3; 
             let playerX = this.player_transform[0][3];
-            let playerY = this.player_transform[1][3];
-            let laneYCoords = -13 + (lane*4);
-
-            //console.log(playerY, laneYCoords);
 
             //check that player did not go out of bounds
             if(playerX < -14 || playerX > 24 || this.score === -4 || this.score > this.lane_num) {
-                //this.game_ended = true; 
+                this.game_ended = true; 
             }
 
-            // checking that the player didn't collide with a ship on the road
-            if(this.lane_type[lane]===2){
+            // checking that the player didn't collide with a ship
+            if(this.lane_type[lane]===1){
                 if(this.check_collision_ships()){
-                    // this.game_ended = true;
+                    this.game_ended = true;
                 }
             }
-
-            //check that player did not land in river 
-            if(this.check_collision_in_river()) {
-                // this.game_ended = true; 
+            // checking that the player didn't collide with a bridge
+            if(this.lane_type[lane]===2){
+                if(this.check_collision_bridge()){
+                    this.game_ended = true;
+                }
             }
         }
     }
 
-    // collision detection with the river
-    check_collision_in_river() {
-        // return false;
-        let lane = this.score+3; 
-        let playerX = this.player_transform[0][3];
-        let playerY = this.player_transform[1][3];
-        let laneY = -13 + (lane*4);
-        if (this.leaf_positions[lane] === undefined) {
-            return false; 
-        }
- 
-        for (let k = 0; k < this.leaf_positions[lane].length; k++) {
-            var leaf_transform = Mat4.identity().times(Mat4.translation(3 + this.leaf_positions[lane][k] * 3, laneY, 1))
-            var leafX = leaf_transform[0][3];
-            var leafY = leaf_transform[1][3];
-            if(Math.sqrt(Math.pow(leafX - playerX, 2) + Math.pow(leafY - playerY, 2)) < 1) {
-               if(this.frog_positions[lane] !== undefined && this.frog_positions[lane] === this.leaf_positions[lane][k]){
-                   return true;
-               }else{
-                   return false; 
-               } 
-            }
-
-        }
-        return true; 
-    }
-    // collision detection with the ships
-    check_collision_ships(){
-        let lane = this.score+3;
+    // collision detection with the bridge
+    check_collision_bridge() {
         let playerX = this.player_transform[0][3];
         let playerY = this.player_transform[1][3];
         let playerLane = 0.25 * playerY + 3.25;
@@ -541,29 +383,31 @@ export class DodgeBoat extends Scene {
         if (playerLane in this.bridge_position && (playerX === pillarLeftPos || playerX === pillarRightPos)) {
             this.game_ended = true;
         }
-        let laneY = -13 + (lane*4);
+    }
+
+    // collision detection with the ships
+    check_collision_ships(){
+        let lane = this.score+3;
+        let playerX = this.player_transform[0][3];
 
         if(this.ship_positions[lane]=== undefined){
             return false;
         }
-
         for(let k=0; k< this.ship_positions[lane].length; k++){
              var ship_transform = this.ship_positions[lane][k].getPosition();
              var dir = this.ship_positions[lane][k].getDirection();
-             //console.log("dir: ", dir);
 
              var ship_moved = Mat4.identity().times(ship_transform).times(Mat4.translation(0, -12, 1));
              var shipX = ship_moved[0][3];
-             var shipY = ship_moved[1][3];
 
-             // checking if ship is placed between the Bruin (playerX) or if Bruin is between the ship
+             // checking if ship is placed between the boat (playerX) or if boat is between the ship
              // When the ships are moving towards the right
-             if(((playerX <= shipX && shipX <= playerX +2.25) || (shipX <= playerX && playerX<= shipX+2.25)) && dir === 1){
+             if(((playerX <= shipX && shipX <= playerX +4.5) || (shipX <= playerX && playerX<= shipX+4.5)) && dir === 1){
                  return true;
              }
-             // checking if ship is placed between the Bruin (playerX) or if Bruin is between the ship
+             // checking if ship is placed between the boat (playerX) or if boat is between the ship
              // When the ships are moving towards the left
-             else if(((playerX-2.25 <= shipX && shipX <= playerX) || (shipX-2.25 <= playerX && playerX<=shipX))&& dir === -1){
+             else if(((playerX-4.5 <= shipX && shipX <= playerX) || (shipX-4.5 <= playerX && playerX<=shipX))&& dir === -1){
                  return true;                 
              }
 
@@ -618,23 +462,14 @@ export class DodgeBoat extends Scene {
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 100000);
 
-        //const light_position = vec4(0, 5, 5, 1);
-        //program_state.lights = [new Light(vec4(0, 1, 1, 0), color(1, 1, 1, 1), 999999)];
-
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+        
+        // Consistantly move the boat forward, speed up if the score goes up, reach a maximum speed at score 60    
         if (this.temp_t !== null && (this.score < 80 ? (t - this.temp_t) > (1 - 0.005 * this.score) : (t - this.temp_t) > 0.6)) {
             this.moveUp = true;
             this.playerMoved = true;
             this.temp_t = t;
         }
-
-        var xpos=this.frog_position.x_pos;
-        var ypos=this.frog_position.y_pos;
-        var zpos=this.frog_position.z_pos;
-        
-        var velocity=0; //initially 0
-        var gaccel=9.8;
-        var gaccelvec=vec3(0,-gaccel,0);
 
         let model_transform = Mat4.identity();
 
@@ -649,170 +484,83 @@ export class DodgeBoat extends Scene {
 
         //generate game scene
         for (var i = 0; i < this.lane_num; i++) { // generate every lane till max lanes
-            if (this.lane_type[i] === 0) { // grass - currently green lanes
+            if (this.lane_type[i] === 0) { // safe water lane
+
                 this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedGrass);
-            } else {
+
+            } 
+            else if (this.lane_type[i] === 2) { // water lane without ships
+
                 this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRiver);
+
                 //rocks
                 if (this.rock_positions[i] !== undefined) {
                     var rock_transform = model_transform.times(Mat4.translation(3 + this.rock_positions[i] * 3, -13, 1));
+
                     this.shapes.rock.draw(context, program_state, rock_transform, this.materials.rock);
                 }
-                else if(this.tree_positions[i] !== undefined) {
-                    // var tree_transform = model_transform.times(Mat4.translation(3 + this.tree_positions[i] * 3, -13, 2))
-                    //                                     .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
-                    // this.shapes.tree.draw(context, program_state, tree_transform, this.materials.tree);
-                    var leaf_transform = model_transform.times(Mat4.translation(3 + this.tree_positions[i]* 3, -14, 1))
-                                                        // .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
-                                                        .times(Mat4.scale(0.3, 0.3, 0.3));
 
-                    this.shapes.leaf.draw(context, program_state, leaf_transform, this.materials.leaf);
+                //lotus
+                else if(this.lotus_positions[i] !== undefined) {
+                    var lotus_transform = model_transform.times(Mat4.translation(3 + this.lotus_positions[i]* 3, -14, 1))
+                                                         .times(Mat4.scale(0.3, 0.3, 0.3));
+
+                    this.shapes.lotus.draw(context, program_state, lotus_transform, this.materials.lotus);
                 }
+
+                //bush
                 else if(this.bush_positions[i] !== undefined) {
                     var bush_transform = model_transform.times(Mat4.translation(3 + this.bush_positions[i] * 3, -13, 2))
                                                         .times(Mat4.rotation(Math.PI/2, 1, 0, 0))
                                                         .times(Mat4.scale(0.5,0.5,0.5))
                                                         .times(Mat4.translation(0,-4,0));
                     this.shapes.bush.draw(context, program_state, bush_transform, this.materials.bush);
-                } else if (this.bridge_position[i] !== undefined) {
+                } 
+
+                //bridge
+                else if (this.bridge_position[i] !== undefined) {
                     var bridge_transform = model_transform.times(Mat4.translation(4.5, -13, 3))
                                                           .times(Mat4.scale(8.5, 5, 5));
                     this.shapes.bridge.draw(context, program_state, bridge_transform, this.materials.bridge);
-                } else {
-
-                // if(this.coin_positions[i] !== undefined) {
-                //     var coin_transform = model_transform.times(Mat4.translation(3 + this.coin_positions[i] * 3, -13 , Math.sin(t) + 2))
-                //                                         .times(Mat4.rotation(Math.PI/2, 0, 1, 0))
-                //                                         .times(Mat4.rotation(Math.PI/2 * t, 1, 0, 0))
-                //                                         .times(Mat4.scale(0.5, 0.5, 1));
-                //     //this.shapes.coin.draw(context, program_state, coin_transform, this.materials.coin);
-                // }
-            // else if (this.lane_type[i] === ) { //road - currently gray lanes
-            //     //this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRoad);
-
-            //     // ships
-            //     if (this.ship_positions[i] !== undefined) {
-            //         for(let k = 0; k < this.ship_positions[i].length; k++) {
-            //             let ship_transform = this.ship_positions[i][k].getPosition(); 
-            //             let dir = this.ship_positions[i][k].getDirection(); 
-            //             let col = this.ship_positions[i][k].getColor(); 
-                        
-            //             let transform = model_transform.times(ship_transform)
-            //                                             .times(Mat4.translation(0, -12, 0))
-            //                                             .times(Mat4.rotation(Math.PI/2, 0, 1 * dir, 0))
-            //                                             .times(Mat4.rotation(Math.PI/2, 0, 0, 1 * dir))
-            //                                             .times(Mat4.scale(1.2, 1.2, 1.2));
-
-            //             if(col === 0) {
-            //                 //this.shapes.ship.draw(context, program_state, transform, this.materials.red_ship);
-            //             } else if(col === 1) {
-            //                 //this.shapes.ship.draw(context, program_state, transform, this.materials.blue_ship);
-            //             } else {
-            //                 //this.shapes.ship.draw(context, program_state, transform, this.materials.black_ship);
-            //             }
-            //             this.ship_positions[i][k].setPosition(ship_transform.times(Mat4.translation(this.ship_speed * dir, 0, 0)));
-                        
-            //             // dynamic instantiation for ship - if ship reaches end of board -> reset it's position to very begining of board
-            //             if((ship_transform[0][3] > 24 && dir === 1) || (ship_transform[0][3] < -14 && dir === -1)) { 
-            //                 // replace out of bounds ship with new one
-            //                 let start_loc = dir === 1 ? -14 : 24; 
-            //                 this.ship_positions[i].splice(k, 1, new ship(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
-            //             }
-                        
-            //         }                        
-                    
-            //     }
-            // } else { // river - currently blue lanes
-            //     this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRiver);
-
-            //     // leaf pads 
-            //     for (let k = 0; k < this.leaf_positions[i].length; k++) {
-            //         var leaf_transform = model_transform.times(Mat4.translation(3 + this.leaf_positions[i][k] * 3, -14, 1))
-            //                                             .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
-
-            //         //this.shapes.leaf.draw(context, program_state, leaf_transform, this.materials.leaf);
-   
-            //         if(this.frog_positions[i] !== undefined && this.frog_positions[i] === this.leaf_positions[i][k]) {
-            //             //console.log(this.leaf_positions[i][k]);
-            //             this.isJumping=true;
-            //             var jumps=0;
-            //             let frog_transform=leaf_transform;
-            //             if(this.isJumping==true){
-            //                 //frog_transform=frog_transform.times(Mat4.translation(0, 3.54 * Math.abs(Math.sin(t)) , 0));
-            //                 frog_transform=frog_transform.times(Mat4.scale(0.55, 0.55, 0.55))
-            //                                             .times(Mat4.translation(0, 3.54 * Math.abs(Math.sin(t)) , 0))
-            //                                             .times(Mat4.rotation(Math.PI, 0, 1, 0))
-            //                                             .times(Mat4.rotation(-Math.PI/2, 1, 0, 0))
-            //                                             .times(Mat4.translation(0, 0, 1));
-            //                 //this.shapes.frog.draw(context, program_state,frog_transform, this.materials.frog);
-            //                 jumps=jumps+1;
-            //                 if(jumps>3){
-            //                     this.isJumping=false;
-            //                 }
-            //             }
-            //         }
-
-            //     }
-            // }
-            // else { //road - currently gray lanes
-                //this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRoad);
-
-                // ships
-                    if (this.ship_positions[i] !== undefined) {
-                        for(let k = 0; k < this.ship_positions[i].length; k++) {
-                            let ship_transform = this.ship_positions[i][k].getPosition(); 
-                            let dir = this.ship_positions[i][k].getDirection(); 
-                            let col = this.ship_positions[i][k].getColor(); 
-                            let transform = model_transform.times(ship_transform)
-                                                            .times(Mat4.translation(0, -12, 0))
-                                                            .times(Mat4.rotation(Math.PI, 1 * dir, 0, 0))
-                                                            .times(Mat4.rotation(Math.PI, 0, 1 * dir, 0))
-                                                            .times(Mat4.rotation(Math.PI, 0, 0, 1 * dir))
-                                                            .times(Mat4.scale(1.2, 1.2, 1.2));
-
-                            this.shapes.ship.draw(context, program_state, transform, this.materials.red_ship);
-                            if(col === 0) {
-                                //this.shapes.ship.draw(context, program_state, transform, this.materials.red_ship);
-                            } else if(col === 1) {
-                                //this.shapes.ship.draw(context, program_state, transform, this.materials.blue_ship);
-                            } else {
-                                //this.shapes.ship.draw(context, program_state, transform, this.materials.black_ship);
-                            }
-                            this.ship_positions[i][k].setPosition(ship_transform.times(Mat4.translation(this.ship_speed * dir, 0, 0)));
-                            
-                            // dynamic instantiation for ship - if ship reaches end of board -> reset it's position to very begining of board
-                            if((ship_transform[0][3] > 24 && dir === 1) || (ship_transform[0][3] < -14 && dir === -1)) { 
-                                // replace out of bounds ship with new one
-                                let start_loc = dir === 1 ? -14 : 24; 
-                                this.ship_positions[i].splice(k, 1, new ship(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
-                            }
-                            
-                        }
-                        
-                        // for (let j = 0; j < this.ship_positions[0].length; j++) {
-                        //     let x =  this.ship_positions[0][j].getX();
-                        //     console.log(x);
-                        // }
-                    }
                 }
 
-                // leaf pads 
-                // for (let k = 0; k < this.leaf_positions[i].length; k++) {
-                    // var leaf_transform = model_transform.times(Mat4.translation(3 + this.leaf_positions[i][k] * 3, -14, 1))
-                    //                                     .times(Mat4.rotation(Math.PI/2, 1, 0, 0));
+            } 
+            else { // water lane with ships
 
-                    // this.shapes.leaf.draw(context, program_state, leaf_transform, this.materials.leaf);
+                this.shapes.lane.draw(context, program_state, model_transform, this.materials.texturedRiver);
 
-                // }
+                // ships
+                if (this.ship_positions[i] !== undefined) {
+                    for(let k = 0; k < this.ship_positions[i].length; k++) {
+                        let ship_transform = this.ship_positions[i][k].getPosition(); 
+                        let dir = this.ship_positions[i][k].getDirection(); 
+                        let transform = model_transform.times(ship_transform)
+                                                        .times(Mat4.translation(0, -12, 0))
+                                                        .times(Mat4.rotation(Math.PI, 1 * dir, 0, 0))
+                                                        .times(Mat4.rotation(Math.PI, 0, 1 * dir, 0))
+                                                        .times(Mat4.rotation(Math.PI, 0, 0, 1 * dir))
+                                                        .times(Mat4.scale(1.2, 1.2, 1.2));
+
+                        this.shapes.ship.draw(context, program_state, transform, this.materials.battleship);
+                        this.ship_positions[i][k].setPosition(ship_transform.times(Mat4.translation(this.ship_speed * dir, 0, 0)));
+                        
+                        // dynamic instantiation for ship - if ship reaches end of board -> reset it's position to very begining of board
+                        if ((ship_transform[0][3] > 24 && dir === 1) || (ship_transform[0][3] < -14 && dir === -1)) { 
+                            // replace out of bounds ship with new one
+                            let start_loc = dir === 1 ? -14 : 24; 
+                            this.ship_positions[i].splice(k, 1, new ship(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), dir)); 
+                        }   
+                    }                
+                }
             }
             model_transform = model_transform.times(Mat4.translation(0, 4, 0));
         }
 
-        // Checking if the ships collided with the Bruin when it's at rest
+        // Checking if the ships collided with the boat when it's at rest
         // when player hasn't moved and when we are on the road (lane = 1)
         if(!this.playerMoved && this.lane_type[this.score+3]===1){
             if(this.check_collision_ships()){
-                // this.game_ended = true;
+                this.game_ended = true;
             }
         }
         
@@ -825,21 +573,20 @@ export class DodgeBoat extends Scene {
             player_rotated_transform = player_rotated_transform.times(Mat4.translation(0, -1, 1));
         }
         
-        // orient the bear/player correctly before displaying it
-        // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/2, 1, 0, 0)); // rotate bear so that it is standing upright, facing south
+        // orient the boat/player correctly before displaying it
+        // player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/2, 1, 0, 0)); // rotate boat so that it is standing upright, facing south
         player_rotated_transform =  player_rotated_transform.times(Mat4.rotation(Math.PI, 1, 0, 0))
                                                             .times(Mat4.rotation(Math.PI/2, 0, 0, 1))
                                                             .times(Mat4.rotation(Math.PI, 0, 1, 0))
                                                             .times(Mat4.translation(0, 0, -0.8))
-                                                            .times(Mat4.scale(0.5, 0.5, 0.5)); // rotate bear so that it is standing upright, facing south
+                                                            .times(Mat4.scale(0.5, 0.5, 0.5)); // rotate boat so that it is standing upright, facing south
         if(this.playerDirection == "west") {
             player_rotated_transform = player_rotated_transform.times(Mat4.rotation(-Math.PI/8, 1, 0, 0));
         }
         else if(this.playerDirection == "east") {
             player_rotated_transform = player_rotated_transform.times(Mat4.rotation(Math.PI/8, 1, 0, 0));
         }
-        // player_rotated_transform = player_rotated_transform.times(Mat4.translation(0, 0.59, 0));
-        this.shapes.bear.draw(context, program_state, player_rotated_transform, this.materials.bruin);
+        this.shapes.boat.draw(context, program_state, player_rotated_transform, this.materials.boat);
 
         this.attached = this.player_transform;
 
