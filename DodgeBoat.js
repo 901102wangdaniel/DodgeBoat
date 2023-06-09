@@ -73,7 +73,7 @@ export class DodgeBoat extends Scene {
             texturedGrass: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/grasslane.jpg")
+                texture: new Texture("assets/riverlane.jpg")
             }),
             texturedRiver: new Material(new  Textured_Phong(), {
                 color: hex_color("#000000"),
@@ -180,18 +180,18 @@ export class DodgeBoat extends Scene {
             var random_v = Math.random();
             var pos = Math.floor(Math.random() * 13); // gets random position
             var new_pos = pos < 6 ? (-1*pos) : (pos-7);
-            if (random_v < 0.14) { // 14% chance of rock
+            if (random_v < 0.15) { // 15% chance of rock
                 rock_pos[i] = new_pos;
             }
-            else if (random_v < 0.27) { // 13% chance of lotus
+            else if (random_v < 0.3) { // 15% chance of lotus
                 lotus_pos[i] = new_pos;
             }
-            else if (random_v < 0.4) { // 13% chance of bush
+            else if (random_v < 0.45) { // 15% chance of bush
                 bush_pos[i] = new_pos;
             } 
-            else if (random_v < 0.6) { // 20% chance of bridge
+            else if (random_v < 0.65) { // 20% chance of bridge
                 bridge_pos[i] = new_pos;
-            }                          // 40% change of ship
+            }                          // 30% change of ship
         }
         this.rock_positions = rock_pos;
         this.lotus_positions = lotus_pos;
@@ -402,12 +402,12 @@ export class DodgeBoat extends Scene {
 
              // checking if ship is placed between the boat (playerX) or if boat is between the ship
              // When the ships are moving towards the right
-             if(((playerX <= shipX && shipX <= playerX +4.5) || (shipX <= playerX && playerX<= shipX+4.5)) && dir === 1){
+             if(((playerX <= shipX && shipX <= playerX +4) || (shipX <= playerX && playerX<= shipX+4)) && dir === 1){
                  return true;
              }
              // checking if ship is placed between the boat (playerX) or if boat is between the ship
              // When the ships are moving towards the left
-             else if(((playerX-4.5 <= shipX && shipX <= playerX) || (shipX-4.5 <= playerX && playerX<=shipX))&& dir === -1){
+             else if(((playerX-4 <= shipX && shipX <= playerX) || (shipX-4 <= playerX && playerX<=shipX))&& dir === -1){
                  return true;                 
              }
 
@@ -578,8 +578,8 @@ export class DodgeBoat extends Scene {
         player_rotated_transform =  player_rotated_transform.times(Mat4.rotation(Math.PI, 1, 0, 0))
                                                             .times(Mat4.rotation(Math.PI/2, 0, 0, 1))
                                                             .times(Mat4.rotation(Math.PI, 0, 1, 0))
-                                                            .times(Mat4.translation(0, 0, -0.8))
-                                                            .times(Mat4.scale(0.5, 0.5, 0.5)); // rotate boat so that it is standing upright, facing south
+                                                            .times(Mat4.translation(0, 0, -0.6))
+                                                            .times(Mat4.scale(0.8, 0.8, 0.8)); // rotate boat so that it is standing upright, facing south
         if(this.playerDirection == "west") {
             player_rotated_transform = player_rotated_transform.times(Mat4.rotation(-Math.PI/8, 1, 0, 0));
         }

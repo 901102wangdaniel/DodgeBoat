@@ -179,7 +179,7 @@
             min-height: 100%;
             min-width: 1024px;
             width: 100%;
-            height: auto;
+            height: 100%;
             position: absolute;
             top: 0;
             left: 0;
@@ -265,7 +265,7 @@
             color: white;
             font-family: monospace;
             padding: 1em;
-            font-size: 18px;
+            font-size: 10px;
             border-radius: 10px;
             transition: opacity 0.2s ease
         }
@@ -328,7 +328,7 @@
 <!-- The following code embeds a WebGL canvas panel, loads certain scene(s), and displays panel(s) of their controls.-->
 <div class="container">
     <div id="titlescreen">
-        <image id="logo" src="theme_background.jpeg"></image>
+        <image id="logo" src="assets/theme_background.jpeg"></image>
         <div id="titletext">
             DodgeBoat!!
         </div>
@@ -337,7 +337,9 @@
         </div>
     </div>
     <div id="controlsoverlay">
-        <p>Use UHJK to move your character.</p>
+        <p>Use UHK to move your boat.</p>
+        <p>Boat will automatically move forward once the game starts.</p>
+        <p>But the user can also control the boat to move forward.</p>
         <p>Use R to restart the game</p>
     </div>
     <div id="levelcompleteoverlay">
