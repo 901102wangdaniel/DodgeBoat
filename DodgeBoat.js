@@ -31,7 +31,7 @@ class ship {
         //let colors = [hex_color("#FF0000"), hex_color("#00FF00"), hex_color("#673AB7"), hex_color("#03A9F4"), hex_color("#FFFF33")]; // red, green, purple, blue, yellow
         //this.color = colors[Math.floor(Math.random() * 5)];
         this.color = Math.floor(Math.random() * 3); // 0 = red, 1 = blue, 2 = black
-        this.direction = direction
+        this.direction = direction;
         //may also need a ship type if we have multiple types of ships
     }
 
@@ -48,7 +48,8 @@ class ship {
     }
 
     setPosition(pos) {
-        this.model_transform = pos; 
+        this.model_transform = pos;
+        this.xPos = pos[0][3];
     }
 }
 
@@ -297,7 +298,7 @@ export class DodgeBoat extends Scene {
         for(let i = 0; i < ship_num; i++) {
             var dist_between = Math.floor(Math.random() * 15); // get random distance between ships
             let ship_transform = Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1));
-            pos.push(new ship(ship_transform, 0, direction)); 
+            pos.push(new ship(ship_transform, 0, direction, x_pos)); 
             //pos.push(Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1)));
             x_pos += (ship_num == 3 ? 13 : (ship_num == 2 ? 17 : 9)) + dist_between;
         }
@@ -531,6 +532,12 @@ export class DodgeBoat extends Scene {
         let lane = this.score+3;
         let playerX = this.player_transform[0][3];
         let playerY = this.player_transform[1][3];
+        let playerLane = 0.25 * playerY + 3.25;
+        let pillarLeftPos = 0;
+        let pillarRightPos = 9;
+        if (playerLane in this.bridge_position && (playerX === pillarLeftPos || playerX === pillarRightPos)) {
+            this.game_ended = true;
+        }
         let laneY = -13 + (lane*4);
 
         if(this.ship_positions[lane]=== undefined){
@@ -778,8 +785,12 @@ export class DodgeBoat extends Scene {
                                 this.ship_positions[i].splice(k, 1, new ship(Mat4.identity().times(Mat4.translation(start_loc, -1, 1)), 0, dir)); 
                             }
                             
-                        }                        
+                        }
                         
+                        // for (let j = 0; j < this.ship_positions[0].length; j++) {
+                        //     let x =  this.ship_positions[0][j].getX();
+                        //     console.log(x);
+                        // }
                     }
                 }
 
