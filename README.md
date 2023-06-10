@@ -1,21 +1,12 @@
-# Crossy Bruins
+# DodgeBoat!!
 
-Rosa Garza, Anubha Kale, Yili Liu, Divya Pimparkar, Catherine Zhang
+Daniel Wang, James Youn
 
-## Setup 
-1. Clone the repository using the following command: 
-      ```
-    git clone git@github.com:intro-graphics/team-project-crossy-bruins.git
-      ```
-2. Double click the **host.bat** or **host.command** file to start the local host. <br/>
-3. Open a chrome tab and navigate to **localhost:8000** to play.
+## Summary
+
+DodgeBoat is an obstacle avoidance game that combines Crossy Road & Temple Run styles. It’s the story of a firefighting boat that seeks to put out the fire created by enemy warships.
+
 
 ## Playing
 
-![Alt Text](demo.gif)
-
-Use the **u** (up), **h** (left), **j** (down), **k** (right) keys to control the bruin and cross as many lanes as possible. To restart the game at any point, press **r**. 
-
-
-Boat:
-https://3dexport.com/free-3dmodel-sail-boat-196869.htm
+Use the 'u' (Begin the game / Up), 'h' (left), 'j' (right) keys to control the boat and cross as many lanes as possible. Press 'r' to restart the game at anytime. 

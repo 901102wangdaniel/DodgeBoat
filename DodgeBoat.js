@@ -83,14 +83,14 @@ export class DodgeBoat extends Scene {
             texturedRoad: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1, diffusivity: 0.1, specularity: 0.1,
-                texture: new Texture("assets/roadlane.png")
+                texture: new Texture("assets/deadlane.jpg")
             }),
             boat: new Material(new defs.Phong_Shader(), 
                 { ambient: 1, diffusivity: .6, color: hex_color("#555555") }),
             battleship: new Material(new Textured_Phong(),
                 { ambient: 1, texture: new Texture("assets/battleship.jpg") }),   
             bridge: new Material(new Textured_Phong(),
-                { ambient: 1, texture: new Texture("assets/towerbridge.jpg") }),                   
+                { ambient: 1, texture: new Texture("assets/towerbridge.jpg") }),
             rock: new Material(new defs.Phong_Shader(),
                 { ambient: 1, diffusivity: .6, color: hex_color("#333333") }),
             lotus: new Material(new defs.Phong_Shader(),
@@ -128,6 +128,9 @@ export class DodgeBoat extends Scene {
         this.lane_type = []; // holds randomly generated type of lane for all lanes  (0 = grass, 1 = road, 2 == river)
         this.lane_num = 1000; // constant for max number of generated lanes
         this.generate_lanes();
+        
+        this.ship_speed = 0.1;  
+        this.score = 0;
 
         this.rock_positions = {}; // dictionary for rocks positions: key = lane number, value = placement in lane 
         this.lotus_positions = {}; // dictionary for lotus positions: key = lane number, value = placement in lane
@@ -139,9 +142,6 @@ export class DodgeBoat extends Scene {
 
         this.ship_lane_min = 0; 
         this.ship_lane_max = 19; 
-
-        this.ship_speed = 0.1;  
-        this.score = 0;
 
         this.game_ended = false; // set this to true if player collided and game is over
 
@@ -204,16 +204,16 @@ export class DodgeBoat extends Scene {
     generate_ships_for_lane() {
         var pos = []; 
         let direction = Math.floor(Math.random() * 2) == 0? -1 : 1; 
-        var x_pos = Math.floor(Math.random() * 5) - 15;
+        var x_pos = Math.floor(Math.random() * 3.5) - 15;
         let ship_num = Math.floor(Math.random() * 2) == 0 ? 3 : 2; // vary ship num per lane so it doesn't look too uniform
         if(this.score > 30) {
             ship_num = Math.floor(Math.random() * 3) + 2; 
         } 
         for(let i = 0; i < ship_num; i++) {
-            var dist_between = Math.floor(Math.random() * 30); // get random distance between ships
-            let ship_transform = Mat4.identity().times(Mat4.translation(dist_between + x_pos, -1, 1));
+            var range = Math.floor(Math.random() * 3.5); // get random distance between ships
+            let ship_transform = Mat4.identity().times(Mat4.translation(range + x_pos, -1, 1));
             pos.push(new ship(ship_transform, direction, x_pos)); 
-            x_pos += (ship_num == 3 ? 13 : (ship_num == 2 ? 17 : 9)) + dist_between;
+            x_pos += (ship_num == 3 ? 14 : (ship_num == 2 ? 21 : 8));
         }
         return pos; 
     }
