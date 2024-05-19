@@ -53,7 +53,7 @@
  *              by the 4x4 matrix and returns the new vec4.  Requires a vec4 as input.
  */
 
-export const tiny = {};
+export const tiny = {}; 
 
 /**
  * **Vector** stores vectors of floating point numbers.  Puts vector math into JavaScript.
